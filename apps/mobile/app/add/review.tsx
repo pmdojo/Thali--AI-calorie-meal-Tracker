@@ -14,7 +14,13 @@ import { Screen } from '../../src/components/Screen';
 import { remainingKcalToday, useStore, type MealType } from '../../src/store';
 
 export default function Review() {
-  const params = useLocalSearchParams<{ mealType: MealType; payload: string }>();
+  const params = useLocalSearchParams<{
+    mealType: MealType;
+    payload: string;
+    source?: 'manual' | 'photo';
+    unresolved?: string;
+    mock?: '0' | '1';
+  }>();
   const budget = useStore((s) => s.budget);
   const logs   = useStore((s) => s.logs);
   const addMeal = useStore((s) => s.addMeal);
@@ -38,14 +44,29 @@ export default function Review() {
     addMeal({
       mealType: (params.mealType as MealType) ?? 'snack',
       components: finalComponents,
-      source: 'manual',
+      source: params.source ?? 'manual',
     });
     router.replace('/(tabs)');
   };
 
+  const unresolved = (params.unresolved ?? '').split('|').filter(Boolean);
+
   return (
     <Screen>
       <Text style={{ ...type.title, color: colors.text }}>Ready to log?</Text>
+
+      {params.source === 'photo' && (
+        <Card tone="alt" style={{ gap: 4 }}>
+          <Text style={{ ...type.caption, color: colors.textMuted }}>
+            From photo · {params.mock === '1' ? 'mock recognition' : 'AI recognition'}
+          </Text>
+          {unresolved.length > 0 && (
+            <Text style={{ ...type.caption, color: colors.textMuted }}>
+              Couldn't match: {unresolved.join(', ')} — add them manually if you like.
+            </Text>
+          )}
+        </Card>
+      )}
 
       <Card style={{ gap: spacing.sm }}>
         <Text style={{ ...type.heading, color: colors.text }}>Estimate</Text>
