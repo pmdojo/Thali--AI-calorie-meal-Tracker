@@ -1,0 +1,19 @@
+{
+  "name": "thali",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Thali — AI nutrition coach calibrated for mixed home-cooked Indian meals.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "mobile": "npm run start --workspace apps/mobile",
+    "web": "npm run dev --workspace apps/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,29 @@
+# deps
+node_modules
+.pnpm-store
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build outputs
+dist
+build
+.next
+out
+apps/mobile/web-build
+
+# expo
+.expo
+.expo-shared
+apps/mobile/ios
+apps/mobile/android
+apps/mobile/.expo
+
+# misc
+.DS_Store
+*.log
+coverage
+.vercel
+.turbo

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-28",
+  "rules": [
+    {
+      "matchDishId": "paneer_butter",
+      "swapToDishId": "paneer_bhurji",
+      "reason": "Same paneer + spices, less cream and oil."
+    },
+    {
+      "matchDishId": "butter_chicken",
+      "swapToDishId": "chicken_curry",
+      "reason": "Same chicken, home-style gravy instead of butter + cream."
+    },
+    {
+      "matchDishId": "dal_makhani",
+      "swapToDishId": "dal_tadka",
+      "reason": "Same dal, without the cream."
+    },
+    {
+      "matchDishId": "biryani_chicken",
+      "swapToDishId": "chicken_curry",
+      "reason": "Skip the rice-heavy biryani, keep the chicken."
+    },
+    {
+      "matchDishId": "biryani_veg",
+      "swapToDishId": "jeera_rice",
+      "reason": "Lighter rice base, add sabzi separately for control."
+    },
+    {
+      "matchDishId": "dosa_masala",
+      "swapToDishId": "dosa_plain",
+      "reason": "Skip the potato filling."
+    },
+    {
+      "matchDishId": "paratha_aloo",
+      "swapToDishId": "roti",
+      "reason": "Trade the stuffed paratha for a plain roti."
+    },
+    {
+      "matchDishId": "paratha_plain",
+      "swapToDishId": "roti",
+      "reason": "No ghee, no oil."
+    },
+    {
+      "matchDishId": "chapati_ghee",
+      "swapToDishId": "roti",
+      "reason": "Same roti, no ghee brushed on top."
+    },
+    {
+      "matchDishId": "naan",
+      "swapToDishId": "roti",
+      "reason": "Whole-wheat roti instead of refined-flour naan."
+    },
+    {
+      "matchDishId": "samosa",
+      "swapToDishId": "kachumber",
+      "reason": "Replace the fried snack with a fresh salad."
+    },
+    {
+      "matchDishId": "pakora",
+      "swapToDishId": "kachumber",
+      "reason": "Replace the fried snack with a fresh salad."
+    },
+    {
+      "matchDishId": "rice_white",
+      "swapToDishId": "rice_basmati",
+      "reason": "Lower-GI basmati, same portion."
+    }
+  ],
+  "portionDownshift": {
+    "large": "medium",
+    "medium": "small",
+    "small": "small"
+  }
+}

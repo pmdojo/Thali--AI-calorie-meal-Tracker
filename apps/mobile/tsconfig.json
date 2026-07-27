@@ -1,0 +1,17 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@thali/shared": ["../../packages/shared/src/index.ts"],
+      "@thali/shared/*": ["../../packages/shared/*"],
+      "@thali/ui-tokens": ["../../packages/ui-tokens/src/index.ts"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
+}

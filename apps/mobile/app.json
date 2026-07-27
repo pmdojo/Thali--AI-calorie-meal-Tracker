@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Thali",
+    "slug": "thali",
+    "scheme": "thali",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F7F4EE",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pmdojo.thali"
+    },
+    "android": {
+      "package": "com.pmdojo.thali"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
