@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm install && cd apps/mobile && npx expo export --platform web --output-dir ../../dist",
+  "outputDirectory": "dist",
+  "framework": null,
+  "installCommand": "echo 'install runs inside buildCommand for workspace hoisting'",
+  "rewrites": [
+    { "source": "/((?!_expo|assets|favicon|.*\\..*).*)", "destination": "/" }
+  ]
+}
