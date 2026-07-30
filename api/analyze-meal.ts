@@ -13,7 +13,9 @@
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+// `gemini-flash-latest` auto-resolves to the current free-tier flash model,
+// so this doesn't go stale as Google retires older versions.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
 
 // Canonical dish names the client can resolve. Steering the model toward these
