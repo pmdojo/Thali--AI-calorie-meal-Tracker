@@ -54,9 +54,23 @@ export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (req.method === 'GET') {
+    // ?models=1 → list which Gemini models this key can call generateContent on.
+    if (req.query?.models && GEMINI_KEY) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}&pageSize=100`);
+        const j = await r.json();
+        const usable = (j.models || [])
+          .filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent'))
+          .map((m: any) => m.name.replace('models/', ''));
+        return res.status(200).json({ usable });
+      } catch (e: any) {
+        return res.status(200).json({ error: String(e?.message || e) });
+      }
+    }
     return res.status(200).json({
       configured: Boolean(GEMINI_KEY || ANTHROPIC_KEY),
       provider: GEMINI_KEY ? 'gemini' : ANTHROPIC_KEY ? 'anthropic' : null,
+      model: GEMINI_MODEL,
     });
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
