@@ -1,0 +1,115 @@
+.phone {
+  position: relative;
+  width: 300px;
+  height: 620px;
+  border-radius: 44px;
+  background: #14121f;
+  padding: 10px;
+  box-shadow: 0 40px 80px -20px rgba(27, 24, 48, 0.35), 0 0 0 2px rgba(27,24,48,0.06);
+  animation: floatY 6s ease-in-out infinite;
+}
+.notch {
+  position: absolute;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 26px;
+  background: #14121f;
+  border-radius: 0 0 16px 16px;
+  z-index: 5;
+}
+.screen {
+  width: 100%; height: 100%;
+  border-radius: 36px;
+  background: linear-gradient(180deg, #f5f1fb 0%, #fbf7f0 42%);
+  padding: 15px 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusRow {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  padding: 0 6px;
+}
+.signal { letter-spacing: 1px; font-size: 9px; }
+
+.greetRow { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+.greetSmall { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+.greetBig { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.streak {
+  font-size: 10px; font-weight: 700; color: var(--accent-deep);
+  background: var(--accent-tint); padding: 5px 9px; border-radius: 999px;
+}
+
+.ringCard {
+  position: relative;
+  background: #fff;
+  border-radius: 24px;
+  padding: 6px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px rgba(27,24,48,0.06);
+}
+.ring { display: block; }
+.ringProgress {
+  stroke-dasharray: 534;
+  stroke-dashoffset: 534;
+  animation: ringDraw 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards;
+}
+.ringInner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ringLabel { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); }
+.ringNum { font-size: 38px; font-weight: 800; color: var(--text); letter-spacing: -2px; line-height: 1; }
+.ringUnit { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+.macros { display: flex; gap: 7px; }
+.macro { flex: 1; background: #fff; border-radius: 14px; padding: 9px; box-shadow: 0 6px 14px rgba(27,24,48,0.05); }
+.macroTop { display: flex; align-items: center; gap: 4px; }
+.macroDot { width: 6px; height: 6px; border-radius: 3px; display: inline-block; }
+.macroLabel { font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.macroVal { font-size: 15px; font-weight: 800; color: var(--text); margin: 2px 0 5px; }
+.macroTrack { height: 5px; background: rgba(27,24,48,0.06); border-radius: 3px; overflow: hidden; }
+.macroFill { display: block; height: 100%; border-radius: 3px; animation: fadeUp 0.8s ease-out 0.6s both; }
+
+.focusCard { background: var(--surface-alt); border-radius: 16px; padding: 11px 12px; }
+.focusHead { font-size: 8px; font-weight: 800; letter-spacing: 1px; color: var(--brand-deep); }
+.focusRow { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 13px; color: var(--text); }
+.check {
+  width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+  background: var(--success); color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.insight {
+  position: relative; overflow: hidden;
+  border-radius: 18px; padding: 12px 14px;
+  background: linear-gradient(135deg, #1d1a3d 0%, #3f2f7a 55%, #7a5af8 120%);
+  box-shadow: 0 10px 22px -6px rgba(122,90,248,0.4);
+}
+.insightSheen {
+  position: absolute; top: 0; bottom: 0; width: 60px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-18deg);
+  animation: shimmer 3.6s ease-in-out infinite;
+}
+.insightTag { font-size: 8px; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.85); }
+.insightBody { font-size: 12.5px; line-height: 1.5; color: #fff; margin-top: 5px; font-weight: 500; }
+
+.qaHead { font-size: 8px; font-weight: 800; letter-spacing: 1px; color: var(--text-muted); padding: 0 2px; }
+.qaRow { display: flex; gap: 7px; }
+.qa {
+  flex: 1;
+  background: #fff; border-radius: 14px; padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  box-shadow: 0 6px 14px rgba(27,24,48,0.05);
+}
+.qa span { font-size: 16px; }
+.qaPrimary {
+  background: linear-gradient(135deg, #8f70ff, #f26b3a);
+  color: #fff;
+  box-shadow: 0 8px 18px -4px rgba(122,90,248,0.5);
+}

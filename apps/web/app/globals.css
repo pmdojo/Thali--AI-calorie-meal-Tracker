@@ -1,33 +1,64 @@
 :root {
-  --bg: #f7f4ee;
+  --bg: #fbf7f0;
+  --bg-alt: #f3eee4;
   --surface: #ffffff;
-  --surface-alt: #eee9f5;
-  --border: #e5dfd3;
-  --text: #1f1b2e;
-  --text-muted: #6b6478;
-  --brand: #7c6bf0;
-  --brand-soft: #c7befb;
-  --accent: #e86b3f;
-  --accent-soft: #fbd9c7;
-  --success: #4caf7b;
-  --warning: #e8b54e;
-  --danger: #d8524a;
+  --surface-alt: #f5f1fb;
+  --surface-warm: #fdece0;
+  --border: rgba(27, 24, 48, 0.08);
+  --text: #1b1830;
+  --text-soft: #3a3556;
+  --text-muted: #6b6488;
+  --text-faint: #9b95b4;
+  --brand: #7a5af8;
+  --brand-deep: #5b3fe0;
+  --brand-tint: #efeafd;
+  --accent: #f26b3a;
+  --accent-deep: #d95721;
+  --accent-tint: #fdece0;
+  --gold: #d9a24b;
+  --success: #2fa679;
+  --success-soft: #d0eedd;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.55;
+  overflow-x: hidden;
 }
-a { color: var(--brand); }
+a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 
-.container {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 24px;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes ringDraw {
+  from { stroke-dashoffset: 534; }
+  to   { stroke-dashoffset: 172; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+@keyframes shimmer {
+  from { transform: translateX(-140%); }
+  to   { transform: translateX(240%); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; }
 }
