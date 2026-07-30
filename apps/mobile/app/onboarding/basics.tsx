@@ -1,11 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, type } from '@thali/ui-tokens';
+import { Text, View } from 'react-native';
+import { colors, spacing, type as t } from '@thali/ui-tokens';
 import type { Sex } from '@thali/shared';
 import { Button } from '../../src/components/Button';
 import { Choice, Field } from '../../src/components/Field';
+import { Icon } from '../../src/components/Icon';
 import { Screen } from '../../src/components/Screen';
+import { StepHeader } from '../../src/components/StepHeader';
 import { useOnboardingDraft } from '../../src/onboardingDraft';
 
 export default function Basics() {
@@ -17,44 +19,41 @@ export default function Basics() {
 
   const canNext = age && heightCm && weightKg && sex;
 
-  return (
-    <Screen>
-      <Text style={styles.title}>The basics</Text>
-      <Text style={styles.sub}>These four numbers set your daily calorie budget. You can change them any time.</Text>
+  const footer = (
+    <Button
+      label="Continue"
+      disabled={!canNext}
+      trailing={<Icon name="arrowR" size={18} color="#fff" strokeWidth={2.4} />}
+      onPress={() => {
+        useOnboardingDraft.setState({
+          age: Number(age), heightCm: Number(heightCm), weightKg: Number(weightKg), sex,
+        });
+        router.push('/onboarding/activity');
+      }}
+    />
+  );
 
-      <View style={{ gap: spacing.md }}>
-        <Text style={styles.label}>Sex</Text>
+  return (
+    <Screen bg="parchment" footer={footer}>
+      <StepHeader
+        step={1} total={5}
+        title="A few basics"
+        subtitle="Four numbers set your daily calorie budget."
+      />
+
+      <View style={{ gap: 6, marginTop: spacing.md }}>
+        <Text style={[t.captionBold, { color: colors.textMuted }]}>Sex</Text>
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
           <Choice label="Female" selected={sex === 'female'} onPress={() => setSex('female')} />
-          <Choice label="Male" selected={sex === 'male'} onPress={() => setSex('male')} />
+          <Choice label="Male"   selected={sex === 'male'}   onPress={() => setSex('male')} />
         </View>
-
-        <Field label="Age (years)" value={age} onChangeText={setAge} keyboardType="numeric" />
-        <Field label="Height (cm)" value={heightCm} onChangeText={setHeightCm} keyboardType="numeric" />
-        <Field label="Weight (kg)" value={weightKg} onChangeText={setWeightKg} keyboardType="decimal-pad" />
       </View>
 
-      <View style={{ flex: 1 }} />
-
-      <Button
-        label="Continue"
-        disabled={!canNext}
-        onPress={() => {
-          useOnboardingDraft.setState({
-            age: Number(age),
-            heightCm: Number(heightCm),
-            weightKg: Number(weightKg),
-            sex,
-          });
-          router.push('/onboarding/activity');
-        }}
-      />
+      <View style={{ gap: spacing.md }}>
+        <Field label="Age" value={age} onChangeText={setAge} keyboardType="numeric" suffix="years" />
+        <Field label="Height" value={heightCm} onChangeText={setHeightCm} keyboardType="numeric" suffix="cm" />
+        <Field label="Weight" value={weightKg} onChangeText={setWeightKg} keyboardType="decimal-pad" suffix="kg" />
+      </View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { ...type.title, color: colors.text },
-  sub: { ...type.body, color: colors.textMuted },
-  label: { ...type.caption, color: colors.textMuted },
-});

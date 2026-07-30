@@ -41,7 +41,7 @@ export default function CameraScreen() {
   if (!permission.granted) {
     return (
       <Screen>
-        <Text style={{ ...type.title, color: colors.text }}>Camera access</Text>
+        <Text style={{ ...type.h1, color: colors.text }}>Camera access</Text>
         <Text style={{ ...type.body, color: colors.textMuted }}>
           Thali reads the plate on-device with your camera. Photos never leave your phone unless you log the meal.
         </Text>
@@ -154,7 +154,7 @@ export default function CameraScreen() {
       {stage === 'error' && (
         <View style={styles.overlay}>
           <Card style={{ gap: spacing.md, minWidth: 260 }}>
-            <Text style={{ ...type.heading, color: colors.text }}>Couldn't analyze</Text>
+            <Text style={{ ...type.h3, color: colors.text }}>Couldn't analyze</Text>
             <Text style={{ ...type.body, color: colors.textMuted }}>{error ?? 'Unknown error.'}</Text>
             <Button label="Try again" onPress={() => setStage('framing')} />
             <Button label="Add manually instead" variant="ghost" onPress={() => router.replace('/add/manual')} />

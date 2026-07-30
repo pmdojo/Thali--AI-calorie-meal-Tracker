@@ -49,13 +49,23 @@ Thali solves #2 for a specific segment.
 
 ## Screenshots
 
+<p align="center"><em>Design system v2 — glass surfaces, layered shadows, gradient hero cards, animated ring, Moti-driven micro-interactions.</em></p>
+
 <table>
   <tr>
-    <td width="20%" align="center"><img src="docs/screenshots/01-welcome.png"     alt="Welcome"><br><sub><b>Welcome</b></sub></td>
-    <td width="20%" align="center"><img src="docs/screenshots/02-dashboard.png"   alt="Dashboard"><br><sub><b>Home dashboard</b></sub></td>
-    <td width="20%" align="center"><img src="docs/screenshots/03-log-manual.png"  alt="Manual log"><br><sub><b>Log a meal</b></sub></td>
-    <td width="20%" align="center"><img src="docs/screenshots/04-flag-swap.png"   alt="Pre-log flag"><br><sub><b>The wedge: pre-log flag + swap</b></sub></td>
-    <td width="20%" align="center"><img src="docs/screenshots/05-history.png"     alt="Weekly heatmap"><br><sub><b>Weekly heatmap</b></sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/01-welcome.png" alt="Welcome"><br><sub><b>Welcome</b> — hero plate + floating condiments</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/04-dashboard.png" alt="Dashboard"><br><sub><b>Dashboard</b> — ring · AI Coach · progress · weekly chart · habits</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/09-flag-swap.png" alt="Pre-log flag"><br><sub><b>The wedge</b> — pre-log flag + one-swap sheet</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/05-log.png" alt="Log a meal"><br><sub><b>Log a meal</b> — camera hero + manual fallback</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/06-manual.png" alt="Manual add"><br><sub><b>Manual add</b> — dish library + portion sliders</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/07-history.png" alt="History"><br><sub><b>History</b> — 7-day trend + 28-day heatmap</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/08-profile.png" alt="Profile"><br><sub><b>Profile</b> — gradient plan card + settings</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/03-activity.png" alt="Onboarding"><br><sub><b>Onboarding</b> — stepper + option cards</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/02-basics.png" alt="Basics"><br><sub><b>Basics</b> — floating-label fields with focus glow</sub></td>
   </tr>
 </table>
 
@@ -87,12 +97,14 @@ No global food database. No barcode scanner. No chat coach. No micronutrients. N
 | Layer         | Choice                                                 | Why                                                                 |
 | ------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
 | Mobile        | **Expo SDK 51** (React Native, expo-router)             | Native camera; single codebase for iOS/Android; web export for portfolio demos |
+| Motion        | **Moti** (Framer Motion for React Native, on Reanimated 3) | Spring physics, mount animations, gesture-driven press states — same API as web Framer Motion |
+| Icons         | **Lucide** (`lucide-react-native`)                     | Consistent 1.8-2.4 stroke system icons; tree-shakable                |
 | State         | **Zustand + AsyncStorage persist**                     | 1 KB of code, no context boilerplate, easy to seed for testing      |
 | Recognition   | **Claude Sonnet 5** vision via Anthropic Messages API   | Tool-use forces structured output; nutrition math never trusts free text |
 | Validation    | **Zod**                                                | Every LLM response is parsed at the boundary                        |
 | Backend       | **Supabase** (Postgres + Auth + RLS + Edge Functions)  | RLS enforces self-only data on day one; Edge Function keeps the API key server-side |
 | Landing       | **Next.js 14** (App Router)                            | Fast static hero + waitlist API route                               |
-| Design tokens | Shared `packages/ui-tokens`                            | Colors + spacing + type shared by mobile and web — one source of truth |
+| Design tokens | Shared `packages/ui-tokens`                            | Warm palette (cream + lavender + spice orange), 24 px system radius, layered near+far shadows, glass materials, motion springs — one source of truth for mobile and web |
 | Deploy        | **Vercel** (mobile RN Web export)                      | Free tier, auto-deploy on `git push`                                |
 | Tests         | **Vitest**                                             | 17 tests, all deterministic; run in ~400 ms                         |
 

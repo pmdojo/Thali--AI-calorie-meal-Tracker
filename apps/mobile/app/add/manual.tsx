@@ -1,16 +1,22 @@
 import { router } from 'expo-router';
+import { MotiView } from 'moti';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radii, spacing, type } from '@thali/ui-tokens';
 import { allDishes, estimateMeal, type MealComponent, type Portion } from '@thali/shared';
+import { colors, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
-import { Choice, Field } from '../../src/components/Field';
+import { Icon } from '../../src/components/Icon';
+import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
 import type { MealType } from '../../src/store';
 
-const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
-const MEAL_LABEL: Record<MealType, string> = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
+const MEAL_TYPES: Array<{ id: MealType; label: string; icon: import('../../src/components/Icon').IconName }> = [
+  { id: 'breakfast', label: 'Breakfast', icon: 'sunrise' },
+  { id: 'lunch',     label: 'Lunch',     icon: 'sun' },
+  { id: 'dinner',    label: 'Dinner',    icon: 'moon' },
+  { id: 'snack',     label: 'Snack',     icon: 'cookie' },
+];
 
 function inferMealType(): MealType {
   const h = new Date().getHours();
@@ -34,109 +40,221 @@ export default function Manual() {
 
   const estimate = useMemo(() => estimateMeal(components), [components]);
 
-  const addComponent = (dishId: string) => {
-    setComponents((cs) => [...cs, { dishId, portion: 'medium', confidence: 1 }]);
-  };
-  const setPortion = (i: number, portion: Portion) => {
-    setComponents((cs) => cs.map((c, idx) => idx === i ? { ...c, portion } : c));
-  };
+  const addComponent = (dishId: string) => setComponents((cs) => [...cs, { dishId, portion: 'medium', confidence: 1 }]);
+  const setPortion = (i: number, portion: Portion) => setComponents((cs) => cs.map((c, idx) => idx === i ? { ...c, portion } : c));
   const remove = (i: number) => setComponents((cs) => cs.filter((_, idx) => idx !== i));
 
-  return (
-    <Screen>
-      <Text style={{ ...type.title, color: colors.text }}>Log a meal</Text>
+  const footer = components.length > 0 && (
+    <Button
+      label={`Review ${components.length} item${components.length > 1 ? 's' : ''}`}
+      icon={<Icon name="arrowR" size={16} color="#fff" strokeWidth={2.4} />}
+      onPress={() =>
+        router.push({
+          pathname: '/add/review',
+          params: { mealType, payload: JSON.stringify(components) },
+        })
+      }
+    />
+  );
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-        {MEAL_TYPES.map((t) => (
-          <Choice key={t} label={MEAL_LABEL[t]} selected={mealType === t} onPress={() => setMealType(t)} />
+  return (
+    <Screen bg="parchment" scroll={false} footer={footer}>
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+          <Icon name="arrowLeft" size={20} color={colors.text} />
+        </Pressable>
+        <Text style={[t.h3, { color: colors.text }]}>Add manually</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {/* Meal type chips */}
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+        {MEAL_TYPES.map((m) => (
+          <Pressable key={m.id} onPress={() => setMealType(m.id)} style={{ flex: 1 }}>
+            <View style={[styles.mealChip, mealType === m.id && styles.mealChipOn]}>
+              <Icon name={m.icon} size={16} color={mealType === m.id ? '#fff' : colors.text} strokeWidth={2.2} />
+              <Text style={[t.caption, { color: mealType === m.id ? '#fff' : colors.text, fontWeight: '600' }]}>{m.label}</Text>
+            </View>
+          </Pressable>
         ))}
       </View>
 
+      {/* Plate summary */}
       {components.length > 0 && (
-        <Card style={{ gap: spacing.sm }}>
-          <Text style={{ ...type.heading, color: colors.text }}>On the plate</Text>
-          {components.map((c, i) => (
-            <View key={i} style={styles.compRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...type.body, color: colors.text }}>
-                  {c.dishId.replace(/_/g, ' ')}
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
-                  {(['small', 'medium', 'large'] as Portion[]).map((p) => (
-                    <Pressable key={p} onPress={() => setPortion(i, p)}>
-                      <Text style={[styles.portion, c.portion === p && styles.portionOn]}>{p}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-              <Pressable onPress={() => remove(i)}>
-                <Text style={{ ...type.body, color: colors.danger }}>Remove</Text>
-              </Pressable>
+        <MotiView from={{ opacity: 0, translateY: -8 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 300 }}>
+          <Card tone="glassStrong" padding="lg" elevation="cardHover">
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={[t.h3, { color: colors.text }]}>On the plate</Text>
+              <Pill label={`${components.length} item${components.length > 1 ? 's' : ''}`} tone="brand" />
             </View>
-          ))}
-          <Text style={{ ...type.bodyBold, color: colors.brand, marginTop: spacing.sm }}>
-            {estimate.kcal.low}–{estimate.kcal.high} kcal · P {estimate.protein.mid}g · C {estimate.carbs.mid}g · F {estimate.fat.mid}g
-          </Text>
-        </Card>
+            <View style={{ gap: spacing.sm }}>
+              {components.map((c, i) => (
+                <View key={i} style={styles.compRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[t.bodyBold, { color: colors.text, textTransform: 'capitalize' }]}>
+                      {c.dishId.replace(/_/g, ' ')}
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
+                      {(['small', 'medium', 'large'] as Portion[]).map((p) => (
+                        <Pressable key={p} onPress={() => setPortion(i, p)}>
+                          <View style={[styles.portion, c.portion === p && styles.portionOn]}>
+                            <Text style={[t.tiny, { color: c.portion === p ? '#fff' : colors.textMuted, textTransform: 'capitalize' }]}>{p}</Text>
+                          </View>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                  <Pressable onPress={() => remove(i)} style={styles.removeBtn}>
+                    <Icon name="trash" size={16} color={colors.danger} />
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+            <View style={styles.estimate}>
+              <View>
+                <Text style={[t.caption, { color: colors.textMuted }]}>Estimate</Text>
+                <Text style={[t.h2, { color: colors.text }]}>{estimate.kcal.low}–{estimate.kcal.high}<Text style={[t.caption, { color: colors.textMuted }]}> kcal</Text></Text>
+              </View>
+              <Text style={[t.caption, { color: colors.textMuted }]}>
+                P {Math.round(estimate.protein.mid)}g · C {Math.round(estimate.carbs.mid)}g · F {Math.round(estimate.fat.mid)}g
+              </Text>
+            </View>
+          </Card>
+        </MotiView>
       )}
 
-      <Field label="Search dishes" value={query} onChangeText={setQuery} placeholder="dal, roti, paneer…" />
-
-      <View style={{ flex: 1, minHeight: 300 }}>
-        <FlatList
-          data={dishes}
-          keyExtractor={(d) => d.id}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <Pressable onPress={() => addComponent(item.id)} style={styles.dishRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...type.body, color: colors.text }}>{item.name}</Text>
-                <Text style={{ ...type.caption, color: colors.textMuted }}>
-                  {item.kcalPer100g} kcal / 100g · {item.category}
-                </Text>
-              </View>
-              <Text style={{ ...type.bodyBold, color: colors.brand }}>+ add</Text>
-            </Pressable>
-          )}
-          ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.border }} />}
-        />
+      {/* Search */}
+      <View style={styles.searchWrap}>
+        <Icon name="search" size={18} color={colors.textMuted} />
+        <View style={{ flex: 1 }}>
+          <Text style={[t.caption, { color: colors.textMuted }]}>Search the dish library</Text>
+        </View>
+      </View>
+      <View style={styles.searchInput}>
+        <Icon name="search" size={16} color={colors.textFaint} />
+        <View style={{ flex: 1 }}>
+          <SearchField value={query} onChange={setQuery} />
+        </View>
+        {query.length > 0 && (
+          <Pressable onPress={() => setQuery('')}>
+            <Icon name="x" size={16} color={colors.textMuted} />
+          </Pressable>
+        )}
       </View>
 
-      <Button
-        label={components.length ? `Review ${components.length} item${components.length > 1 ? 's' : ''}` : 'Add at least one dish'}
-        disabled={components.length === 0}
-        onPress={() =>
-          router.push({
-            pathname: '/add/review',
-            params: { mealType, payload: JSON.stringify(components) },
-          })
-        }
+      {/* Dish list */}
+      <FlatList
+        data={dishes}
+        keyExtractor={(d) => `${d.id}-${d.name}`}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 200, gap: spacing.sm }}
+        renderItem={({ item, index }) => (
+          <MotiView
+            from={{ opacity: 0, translateY: 6 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 200, delay: index * 10 }}
+          >
+            <Pressable onPress={() => addComponent(item.id)}>
+              <View style={[styles.dishRow, shadow.card]}>
+                <View style={styles.dishIcon}>
+                  <Icon name={item.category === 'grain' ? 'sunrise' : item.category === 'protein' ? 'utensils' : item.category === 'legume' ? 'soup' : item.category === 'sweet' ? 'cookie' : 'leaf'} size={18} color={colors.brand} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[t.bodyBold, { color: colors.text }]}>{item.name}</Text>
+                  <Text style={[t.caption, { color: colors.textMuted, textTransform: 'capitalize' }]}>
+                    {item.kcalPer100g} kcal / 100g · {item.category}
+                  </Text>
+                </View>
+                <View style={styles.addPill}>
+                  <Icon name="plus" size={14} color={colors.brand} strokeWidth={2.6} />
+                </View>
+              </View>
+            </Pressable>
+          </MotiView>
+        )}
       />
     </Screen>
   );
 }
 
+function SearchField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { TextInput } = require('react-native');
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChange}
+      placeholder="Try “dal”, “roti”, “paneer”"
+      placeholderTextColor={colors.textFaint}
+      style={{ color: colors.text, fontSize: 15, paddingVertical: 0 }}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
+  iconBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.surface,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  mealChip: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6,
+    paddingVertical: spacing.md,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  mealChipOn: {
+    backgroundColor: colors.brand,
+    borderColor: colors.brand,
+    ...shadow.brandGlow,
+  },
   compRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   portion: {
-    ...type.caption,
-    color: colors.textMuted,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   portionOn: {
-    color: '#fff',
     backgroundColor: colors.brand,
     borderColor: colors.brand,
   },
-  dishRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  removeBtn: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: colors.dangerSoft,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  estimate: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+    marginTop: spacing.md, paddingTop: spacing.md,
+    borderTopWidth: 1, borderTopColor: colors.divider,
+  },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: -8 },
+  searchInput: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    gap: spacing.md,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  dishRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    padding: spacing.md, borderRadius: radii.xl,
+    backgroundColor: colors.surface,
+  },
+  dishIcon: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.brandTint,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  addPill: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: colors.brandTint,
+    alignItems: 'center', justifyContent: 'center',
   },
 });

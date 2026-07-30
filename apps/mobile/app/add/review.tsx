@@ -1,15 +1,19 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { MotiView } from 'moti';
 import { useMemo, useState } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
-import { colors, radii, spacing, type } from '@thali/ui-tokens';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   estimateMeal,
   evaluateFlag,
   suggestAlternative,
   type MealComponent,
 } from '@thali/shared';
+import { colors, gradients, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Button } from '../../src/components/Button';
-import { Card } from '../../src/components/Card';
+import { Card, HeroCard } from '../../src/components/Card';
+import { Icon } from '../../src/components/Icon';
+import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
 import { remainingKcalToday, useStore, type MealType } from '../../src/store';
 
@@ -26,7 +30,7 @@ export default function Review() {
   const addMeal = useStore((s) => s.addMeal);
   const remaining = remainingKcalToday(budget, logs);
 
-  const [components, setComponents] = useState<MealComponent[]>(() => {
+  const [components] = useState<MealComponent[]>(() => {
     try { return JSON.parse(params.payload ?? '[]'); } catch { return []; }
   });
 
@@ -50,64 +54,126 @@ export default function Review() {
   };
 
   const unresolved = (params.unresolved ?? '').split('|').filter(Boolean);
+  const budgetPct = remaining > 0 ? Math.min(1, estimate.kcal.mid / remaining) : 1;
 
   return (
-    <Screen>
-      <Text style={{ ...type.title, color: colors.text }}>Ready to log?</Text>
+    <>
+      <Screen bg="parchment" scroll={true}>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+            <Icon name="arrowLeft" size={20} color={colors.text} />
+          </Pressable>
+          <Text style={[t.h3, { color: colors.text }]}>Review</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-      {params.source === 'photo' && (
-        <Card tone="alt" style={{ gap: 4 }}>
-          <Text style={{ ...type.caption, color: colors.textMuted }}>
-            From photo · {params.mock === '1' ? 'mock recognition' : 'AI recognition'}
+        {params.source === 'photo' && (
+          <Card tone="lavender" padding="md" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Icon name="camera" size={16} color={colors.brand} />
+            <View style={{ flex: 1 }}>
+              <Text style={[t.captionBold, { color: colors.text }]}>
+                From photo · {params.mock === '1' ? 'mock recognition' : 'AI recognition'}
+              </Text>
+              {unresolved.length > 0 && (
+                <Text style={[t.tiny, { color: colors.textMuted, marginTop: 2 }]}>
+                  Couldn't match: {unresolved.join(', ')} — add manually if needed
+                </Text>
+              )}
+            </View>
+          </Card>
+        )}
+
+        {/* Hero estimate */}
+        <HeroCard gradient={flag.flagged ? gradients.peach : gradients.brand} style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Icon name="sparkles" size={14} color="#fff" strokeWidth={2.4} />
+            <Text style={styles.heroTag}>Estimate</Text>
+          </View>
+          <Text style={styles.heroNumber}>
+            {estimate.kcal.low}<Text style={styles.heroNumberDim}>–</Text>{estimate.kcal.high}
+            <Text style={styles.heroUnit}>  kcal</Text>
           </Text>
-          {unresolved.length > 0 && (
-            <Text style={{ ...type.caption, color: colors.textMuted }}>
-              Couldn't match: {unresolved.join(', ')} — add them manually if you like.
+          <Text style={styles.heroSub}>Ranges, not point estimates. Wider band = lower confidence.</Text>
+          <View style={styles.macroRow}>
+            <MacroBadge label="Protein" value={`${Math.round(estimate.protein.mid)}g`} />
+            <MacroBadge label="Carbs" value={`${Math.round(estimate.carbs.mid)}g`} />
+            <MacroBadge label="Fat" value={`${Math.round(estimate.fat.mid)}g`} />
+          </View>
+        </HeroCard>
+
+        {/* Budget context */}
+        <Card padding="lg">
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
+            <Text style={[t.captionBold, { color: colors.textMuted }]}>Against today's budget</Text>
+            <Text style={[t.captionBold, { color: flag.flagged ? colors.accent : colors.success }]}>
+              {Math.round(flag.budgetShare * 100)}%
             </Text>
-          )}
+          </View>
+          <View style={styles.progressTrack}>
+            <MotiView
+              from={{ width: '0%' }}
+              animate={{ width: `${budgetPct * 100}%` }}
+              transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+              style={StyleSheet.absoluteFillObject}
+            >
+              <LinearGradient
+                colors={flag.flagged ? gradients.peach : gradients.brand}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </MotiView>
+          </View>
+          <Text style={[t.caption, { color: colors.textMuted, marginTop: spacing.sm }]}>
+            {estimate.kcal.mid} of {remaining} kcal left in your day.
+          </Text>
         </Card>
-      )}
 
-      <Card style={{ gap: spacing.sm }}>
-        <Text style={{ ...type.heading, color: colors.text }}>Estimate</Text>
-        <Text style={{ ...type.display, color: colors.brand }}>
-          {estimate.kcal.low}–{estimate.kcal.high}
-          <Text style={{ ...type.body, color: colors.textMuted }}>  kcal</Text>
-        </Text>
-        <Text style={{ ...type.caption, color: colors.textMuted }}>
-          Ranges, not point estimates. Wider band = lower confidence.
-        </Text>
-        <Text style={{ ...type.body, color: colors.text, marginTop: spacing.sm }}>
-          P {estimate.protein.mid}g · C {estimate.carbs.mid}g · F {estimate.fat.mid}g
-        </Text>
-      </Card>
+        {/* Component list */}
+        <Card padding="lg" style={{ gap: spacing.sm }}>
+          <Text style={[t.h3, { color: colors.text }]}>What's on the plate</Text>
+          {components.map((c, i) => (
+            <View key={i} style={styles.compRow}>
+              <View style={styles.compDot} />
+              <Text style={[t.body, { color: colors.text, textTransform: 'capitalize' }]}>
+                {c.dishId.replace(/_/g, ' ')}
+              </Text>
+              <View style={{ flex: 1 }} />
+              <Pill label={c.portion} tone="neutral" />
+            </View>
+          ))}
+        </Card>
 
-      <Card tone="alt">
-        <Text style={{ ...type.caption, color: colors.textMuted }}>Against today's budget</Text>
-        <Text style={{ ...type.heading, color: colors.text }}>
-          {estimate.kcal.mid} of {remaining} kcal remaining
-        </Text>
-        <Text style={{ ...type.caption, color: colors.textMuted, marginTop: 4 }}>
-          {Math.round(flag.budgetShare * 100)}% of what's left today
-        </Text>
-      </Card>
-
-      <View style={{ flex: 1 }} />
-
-      <Button label="Log this meal" onPress={() => (flag.flagged ? setFlagOpen(true) : commit('original'))} />
-      <Button label="Back to edit" variant="ghost" onPress={() => router.back()} />
+        <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
+          <Button
+            label="Log this meal"
+            icon={<Icon name="check" size={18} color="#fff" strokeWidth={2.4} />}
+            onPress={() => (flag.flagged ? setFlagOpen(true) : commit('original'))}
+          />
+          <Button label="Back to edit" variant="ghost" onPress={() => router.back()} />
+        </View>
+      </Screen>
 
       <FlagModal
         open={flagOpen}
         onClose={() => setFlagOpen(false)}
-        reasons={flag.reasons}
         currentKcalMid={estimate.kcal.mid}
         remaining={remaining}
+        reasons={flag.reasons}
         alt={alt}
         onLogAnyway={() => { setFlagOpen(false); commit('original'); }}
         onSwap={() => { setFlagOpen(false); commit('alternative'); }}
       />
-    </Screen>
+    </>
+  );
+}
+
+function MacroBadge({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.macroBadge}>
+      <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '700', letterSpacing: 0.4 }}>{label.toUpperCase()}</Text>
+      <Text style={{ color: '#fff', ...t.bodyBold }}>{value}</Text>
+    </View>
   );
 }
 
@@ -132,52 +198,133 @@ function FlagModal({
   return (
     <Modal transparent visible={open} animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <View style={styles.sheet}>
-          <Text style={{ ...type.heading, color: colors.text }}>Heads up 👀</Text>
-          <Text style={{ ...type.body, color: colors.text }}>{reasonCopy}</Text>
+        <MotiView
+          from={{ translateY: 400, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 240 }}
+          style={styles.sheet}
+        >
+          <View style={styles.handle} />
+          <View style={styles.headerRow}>
+            <View style={styles.heroIcon}>
+              <Icon name="sparkles" size={20} color={colors.accent} strokeWidth={2.2} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[t.h2, { color: colors.text }]}>Heads up</Text>
+              <Text style={[t.body, { color: colors.textMuted }]}>{reasonCopy}</Text>
+            </View>
+          </View>
 
           {alt ? (
-            <View style={styles.altBox}>
-              <Text style={{ ...type.caption, color: colors.textMuted }}>One swap</Text>
-              <Text style={{ ...type.bodyBold, color: colors.text }}>{alt.description}</Text>
-              <Text style={{ ...type.caption, color: colors.textMuted }}>{alt.reason}</Text>
-              <Text style={{ ...type.bodyBold, color: colors.success, marginTop: 6 }}>
-                Saves ≈ {alt.savedKcal} kcal
-              </Text>
+            <View style={styles.altCard}>
+              <LinearGradient
+                colors={['#F5F1FB', '#FDECDE']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <Icon name="swap" size={14} color={colors.brandDeep} strokeWidth={2.4} />
+                <Text style={[t.tiny, { color: colors.brandDeep, textTransform: 'uppercase' }]}>One swap</Text>
+              </View>
+              <Text style={[t.h3, { color: colors.text, marginTop: 4 }]}>{alt.description}</Text>
+              <Text style={[t.caption, { color: colors.textMuted, marginTop: 4 }]}>{alt.reason}</Text>
+              <View style={styles.savedRow}>
+                <View style={styles.savedPill}>
+                  <Icon name="check" size={12} color="#fff" strokeWidth={2.4} />
+                  <Text style={{ color: '#fff', ...t.captionBold }}>Saves ≈ {alt.savedKcal} kcal</Text>
+                </View>
+              </View>
             </View>
           ) : (
-            <Text style={{ ...type.caption, color: colors.textMuted }}>
+            <Text style={[t.caption, { color: colors.textMuted }]}>
               No lighter swap in the library for this plate.
             </Text>
           )}
 
-          <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
-            {alt && <Button label={`Swap → ${alt.description}`} onPress={onSwap} />}
+          <View style={{ gap: spacing.sm }}>
+            {alt && (
+              <Button
+                label={`Swap → ${alt.description}`}
+                icon={<Icon name="swap" size={16} color="#fff" strokeWidth={2.4} />}
+                onPress={onSwap}
+              />
+            )}
             <Button label="Log anyway" variant="ghost" onPress={onLogAnyway} />
           </View>
-        </View>
+        </MotiView>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  iconBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.surface,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  heroTag: { color: 'rgba(255,255,255,0.85)', ...t.tiny, textTransform: 'uppercase' },
+  heroNumber: { color: '#fff', fontSize: 56, fontWeight: '800', letterSpacing: -2 },
+  heroNumberDim: { color: 'rgba(255,255,255,0.55)' },
+  heroUnit: { color: 'rgba(255,255,255,0.75)', fontSize: 15, fontWeight: '600' },
+  heroSub: { color: 'rgba(255,255,255,0.75)', ...t.caption },
+  macroRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  macroBadge: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderRadius: radii.md, padding: spacing.sm,
+    alignItems: 'flex-start', gap: 4,
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.surfaceAlt,
+    overflow: 'hidden',
+  },
+  compRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: 6,
+  },
+  compDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: colors.scrim,
     justifyContent: 'flex-end',
   },
   sheet: {
     backgroundColor: colors.surface,
-    borderTopLeftRadius: radii.xl,
-    borderTopRightRadius: radii.xl,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
     padding: spacing.xl,
+    paddingBottom: spacing.xxl,
     gap: spacing.md,
+    ...shadow.floating,
   },
-  altBox: {
-    backgroundColor: colors.surfaceAlt,
-    padding: spacing.md,
-    borderRadius: radii.md,
-    gap: 4,
+  handle: {
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: colors.borderStrong,
+    alignSelf: 'center',
+    marginBottom: spacing.sm,
+  },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  heroIcon: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: colors.accentTint,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  altCard: {
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+    overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  savedRow: { flexDirection: 'row', marginTop: spacing.sm },
+  savedPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.success,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderRadius: radii.pill,
   },
 });
