@@ -1,16 +1,22 @@
 import { router } from 'expo-router';
 import { MotiView } from 'moti';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, gradients, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
+import { colors, spacing, type as t } from '@thali/ui-tokens';
+import { AICoachCard } from '../../src/components/AICoachCard';
 import { Card } from '../../src/components/Card';
-import { DateStrip } from '../../src/components/DateStrip';
-import { Icon, IconName } from '../../src/components/Icon';
-import { MacroPill } from '../../src/components/MacroPill';
+import { FAB } from '../../src/components/FAB';
+import { HabitCard } from '../../src/components/HabitCard';
+import { HeroRing } from '../../src/components/HeroRing';
+import { Icon } from '../../src/components/Icon';
+import { MealRow } from '../../src/components/MealRow';
+import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
 import { SectionHeader } from '../../src/components/SectionHeader';
-import { SemiGauge } from '../../src/components/SemiGauge';
+import { Sparkline } from '../../src/components/Sparkline';
+import { StatTile } from '../../src/components/StatTile';
+import { StreakBadge } from '../../src/components/StreakBadge';
 import {
+  dailyStatusForRange,
   streakSummary,
   todaysKcal,
   todaysLogs,
@@ -18,168 +24,298 @@ import {
   useStore,
 } from '../../src/store';
 
-const MEAL_META: Record<string, { emoji: string; grad: [string, string]; label: string }> = {
-  breakfast: { emoji: '🍳', grad: ['#FDECDE', '#FBCFB5'], label: 'Breakfast' },
-  lunch:     { emoji: '🥗', grad: ['#EAF7EF', '#CBEBD8'], label: 'Lunch' },
-  dinner:    { emoji: '🍛', grad: ['#F5F1FB', '#E3D9FA'], label: 'Dinner' },
-  snack:     { emoji: '🍪', grad: ['#FBF1DD', '#F2D8A5'], label: 'Snack' },
-};
+function greetingParts() {
+  const h = new Date().getHours();
+  if (h < 5)  return { hi: 'Still up?',       icon: 'moon' as const };
+  if (h < 12) return { hi: 'Good morning',    icon: 'sunrise' as const };
+  if (h < 17) return { hi: 'Good afternoon',  icon: 'sun' as const };
+  if (h < 21) return { hi: 'Good evening',    icon: 'sunset' as const };
+  return         { hi: 'Good night',        icon: 'moon' as const };
+}
+
+function coachMessage(remaining: number, proteinConsumed: number, proteinGoal: number, streakLogged: number, streakTotal: number) {
+  if (remaining < 200) return {
+    headline: "You're right at the edge.",
+    body:     `Only ${remaining} kcal left today. Keep the next meal light — a curd + kachumber plate lands around 180.`,
+  };
+  if (proteinConsumed < proteinGoal * 0.5) return {
+    headline: `You're ${Math.max(0, proteinGoal - proteinConsumed)}g short on protein.`,
+    body:     "A bowl of dal + paneer bhurji will get you there without breaking your kcal budget.",
+  };
+  if (streakLogged === streakTotal) return {
+    headline: 'Every day this week — nice.',
+    body:     "Consistency is what actually moves weight. You're locked in.",
+  };
+  return {
+    headline: `You've logged ${streakLogged} of the last ${streakTotal} days.`,
+    body:     "That's what moves the needle — not perfection. Snap dinner tonight and you're 1 closer.",
+  };
+}
 
 export default function Home() {
-  const { budget, logs } = useStore();
+  const { profile, budget, logs } = useStore();
   const consumed = todaysKcal(logs);
   const remaining = Math.max(0, (budget?.kcal ?? 0) - consumed);
-  const fraction = budget ? remaining / budget.kcal : 0;
+  const progress = budget ? consumed / budget.kcal : 0;
   const macros = todaysMacros(logs);
   const streak = streakSummary(logs);
   const meals = todaysLogs(logs).sort((a, b) => a.loggedAt.localeCompare(b.loggedAt));
 
-  const dateLabel = new Date().toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'long' });
+  const week = dailyStatusForRange(logs, budget, 7);
+  const dayLabels = week.map((d) => new Date(d.date).toLocaleDateString('en', { weekday: 'narrow' }));
+
+  const g = greetingParts();
+  const coach = coachMessage(remaining, macros.protein, budget?.macros.proteinG ?? 100, streak.logged, streak.total);
+
+  const firstName = 'there'; // profile has no name field; keep flexible
 
   return (
-    <Screen bg="parchment">
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.avatar}>
-            <LinearGradient colors={gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
-            <Text style={styles.avatarLetter}>R</Text>
+    <>
+      <Screen bg="parchment">
+        {/* ─── Greeting bar ───────────────────────────────────────── */}
+        <View style={styles.topRow}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon name={g.icon} size={16} color={colors.textMuted} strokeWidth={2} />
+              <Text style={[t.captionBold, { color: colors.textMuted }]}>{g.hi}</Text>
+            </View>
+            <Text style={[t.h1, { color: colors.text }]}>How are we doing today?</Text>
           </View>
-          <View>
-            <Text style={[t.h3, { color: colors.text }]}>Hey there 👋</Text>
-            <Text style={[t.caption, { color: colors.textMuted }]}>{dateLabel}</Text>
+          <Pressable style={styles.avatar} onPress={() => router.push('/(tabs)/profile')}>
+            <Icon name="user" size={20} color={colors.text} />
+          </Pressable>
+        </View>
+
+        {/* ─── Hero ring + streak on top ───────────────────────────── */}
+        <Card tone="glassStrong" padding="lg" elevation="cardHover" radius="xxl" style={{ alignItems: 'center', gap: spacing.md }}>
+          <View style={styles.streakRow}>
+            <StreakBadge count={streak.logged} label={`of ${streak.total} days`} />
+            <Pill label="On track" icon="check" tone="success" />
           </View>
-        </View>
-        <View style={styles.headerBtns}>
-          <IconBtn icon="history" onPress={() => router.push('/(tabs)/history')} />
-          <IconBtn icon="bell" />
-        </View>
-      </View>
 
-      {/* Date strip */}
-      <DateStrip />
+          <HeroRing
+            progress={progress}
+            consumed={consumed}
+            remaining={remaining}
+            budget={budget?.kcal ?? 0}
+          />
 
-      {/* Calories Left gauge card */}
-      <Card padding="lg" elevation="cardHover" radius="xxl">
-        <View style={styles.cardHead}>
-          <Text style={[t.h3, { color: colors.text }]}>Calories Left</Text>
-          <Pressable><Icon name="moreHoriz" size={20} color={colors.textFaint} /></Pressable>
-        </View>
-        <View style={{ alignItems: 'center', marginTop: spacing.sm }}>
-          <SemiGauge value={remaining} unit="Kcal" fraction={fraction} size={250} />
-        </View>
-      </Card>
-
-      {/* Macro pills */}
-      <View style={styles.macros}>
-        <MacroPill tone="carbs"   label="Carbs"   value={macros.carbs}   goal={budget?.macros.carbsG ?? 0}   index={0} />
-        <MacroPill tone="protein" label="Protein" value={macros.protein} goal={budget?.macros.proteinG ?? 0} index={1} />
-        <MacroPill tone="fat"     label="Fat"     value={macros.fat}     goal={budget?.macros.fatG ?? 0}     index={2} />
-      </View>
-
-      {/* AI insight — kept as a slim on-brand touch */}
-      <Pressable onPress={() => router.push('/(tabs)/log')}>
-        <View style={styles.insight}>
-          <LinearGradient colors={['#1D1A3D', '#3F2F7A', '#7A5AF8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
-          <View style={styles.insightIcon}><Icon name="sparkles" size={16} color="#fff" strokeWidth={2.4} /></View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.insightTag}>AI COACH</Text>
-            <Text style={styles.insightBody} numberOfLines={2}>
-              {remaining < 300
-                ? "You're close to your limit — keep the next meal light."
-                : `You've logged ${streak.logged} of the last ${streak.total} days. Snap your next meal to stay on track.`}
-            </Text>
+          <View style={styles.miniStats}>
+            <MiniStat icon="flame" label="Consumed" value={`${Math.round(consumed)}`} color={colors.accent} />
+            <View style={styles.miniDivider} />
+            <MiniStat icon="target" label="Budget"   value={`${budget?.kcal ?? 0}`} color={colors.brand} />
+            <View style={styles.miniDivider} />
+            <MiniStat icon="trending" label="Pace"   value={`${budget?.weeklyRateKgPerWeek ?? 0} kg/wk`} color={colors.success} />
           </View>
-          <Icon name="chevronR" size={18} color="rgba(255,255,255,0.7)" />
-        </View>
-      </Pressable>
+        </Card>
 
-      {/* Meals */}
-      <SectionHeader title="Today's meals" action={meals.length ? 'View all' : undefined} onAction={() => router.push('/(tabs)/history')} />
-      {meals.length === 0 ? (
-        <Pressable onPress={() => router.push('/add/camera')}>
+        {/* ─── AI Coach ────────────────────────────────────────────── */}
+        <AICoachCard
+          headline={coach.headline}
+          body={coach.body}
+          ctaLabel="Ask the coach"
+          onCta={() => router.push('/(tabs)/log')}
+        />
+
+        {/* ─── Progress cards (macros) ─────────────────────────────── */}
+        <SectionHeader title="Today's progress" />
+        <View style={styles.grid}>
+          <StatTile
+            label="Protein"
+            value={Math.round(macros.protein)}
+            unit={`/ ${budget?.macros.proteinG ?? 0}g`}
+            icon="activity"
+            tint="lavender"
+            progress={macros.protein / Math.max(1, budget?.macros.proteinG ?? 1)}
+            style={styles.gridItem}
+          />
+          <StatTile
+            label="Carbs"
+            value={Math.round(macros.carbs)}
+            unit={`/ ${budget?.macros.carbsG ?? 0}g`}
+            icon="zap"
+            tint="gold"
+            progress={macros.carbs / Math.max(1, budget?.macros.carbsG ?? 1)}
+            style={styles.gridItem}
+          />
+          <StatTile
+            label="Fat"
+            value={Math.round(macros.fat)}
+            unit={`/ ${budget?.macros.fatG ?? 0}g`}
+            icon="droplets"
+            tint="peach"
+            progress={macros.fat / Math.max(1, budget?.macros.fatG ?? 1)}
+            style={styles.gridItem}
+          />
+          <StatTile
+            label="Water"
+            value="1.4"
+            unit="/ 2.5 L"
+            icon="droplets"
+            tint="sky"
+            progress={0.56}
+            style={styles.gridItem}
+          />
+        </View>
+
+        {/* ─── Weekly trend chart ──────────────────────────────────── */}
+        <SectionHeader title="Last 7 days" action="See all" onAction={() => router.push('/(tabs)/history')} />
+        <Card padding="lg" elevation="card">
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md }}>
+            <View>
+              <Text style={[t.caption, { color: colors.textMuted }]}>Weekly average</Text>
+              <Text style={[t.h2, { color: colors.text }]}>{Math.round(week.reduce((s, d) => s + d.kcal, 0) / 7)} kcal</Text>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={[t.caption, { color: colors.textMuted }]}>Goal</Text>
+              <Text style={[t.h2, { color: colors.brand }]}>{budget?.kcal ?? 0} kcal</Text>
+            </View>
+          </View>
+          <Sparkline
+            data={week.map((d) => d.kcal || (budget?.kcal ?? 0) * 0.15)}
+            goal={budget?.kcal ?? 0}
+            labels={dayLabels}
+            width={310}
+            height={140}
+          />
+        </Card>
+
+        {/* ─── Today's meals ───────────────────────────────────────── */}
+        <SectionHeader title="Today's meals" action={meals.length ? 'Add another' : undefined} onAction={() => router.push('/(tabs)/log')} />
+        {meals.length === 0 ? (
           <Card tone="lavender" padding="lg" style={{ alignItems: 'center', gap: spacing.sm }}>
-            <View style={styles.emptyIcon}><Icon name="camera" size={22} color={colors.brand} /></View>
-            <Text style={[t.bodyBold, { color: colors.text }]}>No meals yet</Text>
+            <View style={styles.emptyIcon}>
+              <Icon name="utensils" size={24} color={colors.brand} />
+            </View>
+            <Text style={[t.bodyBold, { color: colors.text }]}>Nothing logged yet.</Text>
             <Text style={[t.caption, { color: colors.textMuted, textAlign: 'center' }]}>
-              Tap the + below to scan your first plate.
+              Tap the scan button below to snap your first plate — takes about 15 seconds.
             </Text>
           </Card>
-        </Pressable>
-      ) : (
-        <View style={styles.mealGrid}>
-          {meals.slice(0, 4).map((m, i) => {
-            const meta = MEAL_META[m.mealType];
-            return (
-              <MotiView
+        ) : (
+          <View style={{ gap: spacing.sm }}>
+            {meals.map((m, i) => (
+              <MealRow
                 key={m.id}
-                from={{ opacity: 0, scale: 0.94 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'timing', duration: 340, delay: i * 70 }}
-                style={styles.mealTile}
-              >
-                <LinearGradient colors={meta.grad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
-                <Text style={styles.mealEmoji}>{meta.emoji}</Text>
-                <View style={styles.mealInfo}>
-                  <Text style={[t.captionBold, { color: colors.text }]}>{meta.label}</Text>
-                  <Text style={[t.tiny, { color: colors.textMuted }]}>{m.estimate.kcal.low}–{m.estimate.kcal.high} kcal</Text>
-                </View>
-              </MotiView>
-            );
-          })}
-        </View>
-      )}
+                index={i}
+                mealType={m.mealType}
+                items={m.components.map((c) => c.dishId)}
+                kcalLow={m.estimate.kcal.low}
+                kcalHigh={m.estimate.kcal.high}
+                confidence={m.estimate.overallConfidence}
+                time={new Date(m.loggedAt).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}
+                wasSwapped={(m as { tookAlternative?: boolean }).tookAlternative}
+              />
+            ))}
+          </View>
+        )}
 
-      <View style={{ height: spacing.xxl }} />
-    </Screen>
+        {/* ─── Healthy habits ──────────────────────────────────────── */}
+        <SectionHeader title="Healthy habits" action="Customize" />
+        <View style={{ gap: spacing.sm }}>
+          <HabitCard
+            title="Hit protein floor"
+            subtitle="1.6 g / kg keeps lean mass"
+            icon="activity"
+            tint="lavender"
+            count={`${Math.round((macros.protein / Math.max(1, budget?.macros.proteinG ?? 1)) * 100)}%`}
+            streak={4}
+          />
+          <HabitCard
+            title="Drink water"
+            subtitle="8 glasses today"
+            icon="droplets"
+            tint="sky"
+            count="5 / 8"
+            streak={12}
+          />
+          <HabitCard
+            title="Home-cooked meals"
+            subtitle="Better calibration = better accuracy"
+            icon="leaf"
+            tint="mint"
+            count="3 today"
+            streak={6}
+          />
+          <HabitCard
+            title="Move after dinner"
+            subtitle="10-min walk lowers glucose spike"
+            icon="heart"
+            tint="peach"
+            count="Not yet"
+          />
+        </View>
+
+        <View style={{ height: spacing.xxl }} />
+      </Screen>
+
+      <FAB icon="scan" label="Scan meal" onPress={() => router.push('/add/camera')} bottom={104} />
+    </>
   );
 }
 
-function IconBtn({ icon, onPress }: { icon: IconName; onPress?: () => void }) {
+// ─────────────────────────────────────────────────────────────────────
+function MiniStat({ icon, label, value, color }: { icon: import('../../src/components/Icon').IconName; label: string; value: string; color: string }) {
   return (
-    <Pressable onPress={onPress} style={styles.iconBtn}>
-      <Icon name={icon} size={18} color={colors.text} />
-    </Pressable>
+    <MotiView
+      from={{ opacity: 0, translateY: 6 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 400 }}
+      style={{ flex: 1, alignItems: 'center', gap: 4 }}
+    >
+      <Icon name={icon} size={14} color={color} strokeWidth={2.2} />
+      <Text style={[t.caption, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[t.bodyBold, { color: colors.text }]}>{value}</Text>
+    </MotiView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
   avatar: {
-    width: 46, height: 46, borderRadius: 23, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center', ...shadow.brandGlow,
-  },
-  avatarLetter: { color: '#fff', fontSize: 20, fontWeight: '800' },
-  headerBtns: { flexDirection: 'row', gap: spacing.sm },
-  iconBtn: {
-    width: 42, height: 42, borderRadius: 21,
-    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  macros: { flexDirection: 'row', gap: spacing.sm },
-  insight: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-    borderRadius: radii.xl, padding: spacing.lg, overflow: 'hidden',
-    ...shadow.brandGlow,
-  },
-  insightIcon: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center',
-  },
-  insightTag: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: 'rgba(255,255,255,0.8)' },
-  insightBody: { ...t.caption, color: '#fff', marginTop: 2 },
-  emptyIcon: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: colors.brandTint,
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: colors.surface,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+    ...({} as object),
   },
-  mealGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  mealTile: {
-    width: '47.5%', flexGrow: 1, height: 120,
-    borderRadius: radii.xl, overflow: 'hidden', padding: spacing.md,
-    justifyContent: 'space-between', ...shadow.card,
+  streakRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
-  mealEmoji: { fontSize: 34 },
-  mealInfo: { gap: 1 },
+  miniStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+  },
+  miniDivider: {
+    width: 1, height: 32,
+    backgroundColor: colors.divider,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  gridItem: {
+    width: '47%',
+    flexGrow: 1,
+  },
+  emptyIcon: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: colors.brandTint,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
 });
