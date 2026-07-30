@@ -21,7 +21,7 @@ export default function Log() {
         gradient={gradients.brand}
         style={{ gap: spacing.md }}
       >
-        <Pill label={live ? 'AI live' : 'Mock mode'} icon="sparkles" tone="brand" />
+        <Pill label={live ? 'AI vision' : 'Demo mode'} icon="sparkles" tone="brand" />
         <Text style={[t.h2, { color: '#fff' }]}>Snap the plate.</Text>
         <Text style={{ ...t.body, color: 'rgba(255,255,255,0.85)' }}>
           Thali reads mixed home-cooked plates like dal-sabzi-roti thalis — the meals Cal AI misjudges.

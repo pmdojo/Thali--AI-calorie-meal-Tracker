@@ -62,6 +62,7 @@ export interface DishRef {
   proteinPer100g: number;
   carbsPer100g: number;
   fatPer100g: number;
+  fiberPer100g: number;
 }
 
 export interface MealComponent {
@@ -83,5 +84,6 @@ export interface MealEstimate {
   protein: EstimatedRange;
   carbs: EstimatedRange;
   fat: EstimatedRange;
+  fiber: EstimatedRange;
   overallConfidence: number;
 }

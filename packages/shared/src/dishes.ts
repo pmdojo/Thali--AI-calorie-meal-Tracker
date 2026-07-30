@@ -41,6 +41,7 @@ export function estimateMeal(components: MealComponent[]): MealEstimate {
   let protein: EstimatedRange = { low: 0, mid: 0, high: 0 };
   let carbs: EstimatedRange = { low: 0, mid: 0, high: 0 };
   let fat: EstimatedRange = { low: 0, mid: 0, high: 0 };
+  let fiber: EstimatedRange = { low: 0, mid: 0, high: 0 };
   const confidences: number[] = [];
 
   for (const c of components) {
@@ -49,10 +50,11 @@ export function estimateMeal(components: MealComponent[]): MealEstimate {
     const g = gramsFor(dish, c.portion, c.gramsOverride);
     const factor = g / 100;
     const spread = 0.15 + (1 - c.confidence) * 0.15; // lower confidence → wider band
-    kcal    = addRange(kcal,    bandFromPoint(dish.kcalPer100g   * factor, spread));
+    kcal    = addRange(kcal,    bandFromPoint(dish.kcalPer100g    * factor, spread));
     protein = addRange(protein, bandFromPoint(dish.proteinPer100g * factor, spread));
     carbs   = addRange(carbs,   bandFromPoint(dish.carbsPer100g   * factor, spread));
     fat     = addRange(fat,     bandFromPoint(dish.fatPer100g     * factor, spread));
+    fiber   = addRange(fiber,   bandFromPoint((dish.fiberPer100g ?? 0) * factor, spread));
     confidences.push(c.confidence);
   }
 
@@ -60,5 +62,5 @@ export function estimateMeal(components: MealComponent[]): MealEstimate {
     ? 0
     : confidences.reduce((s, v) => s + v, 0) / confidences.length;
 
-  return { components, kcal, protein, carbs, fat, overallConfidence };
+  return { components, kcal, protein, carbs, fat, fiber, overallConfidence };
 }

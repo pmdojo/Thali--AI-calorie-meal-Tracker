@@ -99,6 +99,7 @@ export default function Review() {
             <MacroBadge label="Protein" value={`${Math.round(estimate.protein.mid)}g`} />
             <MacroBadge label="Carbs" value={`${Math.round(estimate.carbs.mid)}g`} />
             <MacroBadge label="Fat" value={`${Math.round(estimate.fat.mid)}g`} />
+            <MacroBadge label="Fiber" value={`${Math.round(estimate.fiber?.mid ?? 0)}g`} />
           </View>
         </HeroCard>
 

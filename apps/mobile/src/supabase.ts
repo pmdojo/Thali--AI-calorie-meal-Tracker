@@ -1,16 +1,30 @@
-// Feature-flagged recognition client with a dev-mode mock, so the camera
-// flow is testable end-to-end even before the Supabase project + Anthropic
-// key are wired. When keys are present, calls the real Edge Function.
+// Recognition client.
+//
+// - Web (the Vercel deployment): POSTs the photo to the co-hosted
+//   /api/analyze-meal serverless function, which calls Gemini vision.
+//   If no key is configured server-side, that endpoint returns a clearly
+//   labelled sample plate (mock:true) so the flow still works.
+// - Native (Expo Go / device): calls the Supabase Edge Function when
+//   EXPO_PUBLIC_SUPABASE_URL + ANON_KEY are set; otherwise the local mock.
+//
+// The model only ever returns { name, portion, confidence } — every calorie,
+// macro, and fiber number is computed client-side against the dish table.
 
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { findDishByName, type MealComponent, type Portion } from '@thali/shared';
+
+const WEB = Platform.OS === 'web';
 
 const url  = (Constants.expoConfig?.extra?.supabaseUrl as string | undefined)
   ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anon = (Constants.expoConfig?.extra?.supabaseAnonKey as string | undefined)
   ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-export const isRecognitionEnabled = (): boolean => Boolean(url && anon);
+// On web the recognition backend is the co-hosted /api/analyze-meal function,
+// so the flow is "enabled" — whether a real key is present is decided
+// server-side and reflected in the response's `mock` flag.
+export const isRecognitionEnabled = (): boolean => WEB || Boolean(url && anon);
 
 export interface RecognizedComponent {
   name: string;
@@ -26,8 +40,34 @@ export interface RecognitionResponse {
 export async function analyzeMealImage(
   imageBase64: string,
   mimeType = 'image/jpeg',
-): Promise<RecognitionResponse & { mock: boolean }> {
-  if (!isRecognitionEnabled()) {
+): Promise<RecognitionResponse & { mock: boolean; provider?: string; needsKey?: boolean }> {
+  // ── Web: co-hosted Gemini endpoint ──────────────────────────────────────
+  if (WEB) {
+    try {
+      const res = await fetch('/api/analyze-meal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ imageBase64, mimeType }),
+      });
+      if (res.ok) {
+        const p = await res.json();
+        return {
+          components: Array.isArray(p.components) ? p.components : [],
+          notes: p.notes,
+          mock: Boolean(p.mock),
+          provider: p.provider,
+          needsKey: Boolean(p.needsKey),
+        };
+      }
+    } catch {
+      // network error → fall through to local mock
+    }
+    const mocked = await mockRecognition();
+    return { ...mocked, mock: true };
+  }
+
+  // ── Native: Supabase Edge Function or local mock ────────────────────────
+  if (!(url && anon)) {
     const mocked = await mockRecognition();
     return { ...mocked, mock: true };
   }
@@ -36,7 +76,7 @@ export async function analyzeMealImage(
     headers: {
       'content-type': 'application/json',
       'authorization': `Bearer ${anon}`,
-      'apikey': anon!,
+      'apikey': anon,
     },
     body: JSON.stringify({ imageBase64, mimeType }),
   });
@@ -45,9 +85,8 @@ export async function analyzeMealImage(
   return { ...payload, mock: false };
 }
 
-// Turn a RecognitionResponse into MealComponents the store/review flow
-// understands. Unmatched dishes are dropped, but returned separately so the
-// UI can surface them ("we couldn't match: gulab jamun") for correction.
+// Map recognised names → dish IDs via the reference table. Unmatched names are
+// returned separately so the UI can surface them for manual correction.
 export function resolveComponents(
   recognition: RecognitionResponse,
 ): { components: MealComponent[]; unresolved: string[] } {
@@ -66,18 +105,17 @@ export function resolveComponents(
   return { components, unresolved };
 }
 
-// Plausible dev-mode response so the camera → review → flag loop is
-// demoable without any keys. Weighted to trigger the flag reliably
-// (paneer butter + rotis + rice ≈ 42-55% of a 1800-2000 kcal budget).
+// Local fallback plate — only used if the endpoint is unreachable. Clearly
+// surfaced as mock in the UI.
 async function mockRecognition(): Promise<RecognitionResponse> {
-  await new Promise((r) => setTimeout(r, 900));
+  await new Promise((r) => setTimeout(r, 700));
   return {
     components: [
       { name: 'Paneer butter masala', portion: 'medium', confidence: 0.82 },
-      { name: 'Roti (whole wheat)',   portion: 'medium', confidence: 0.9 },
-      { name: 'Roti (whole wheat)',   portion: 'medium', confidence: 0.88 },
-      { name: 'Kachumber salad',      portion: 'small',  confidence: 0.7 },
+      { name: 'Roti', portion: 'medium', confidence: 0.9 },
+      { name: 'Roti', portion: 'medium', confidence: 0.88 },
+      { name: 'Kachumber salad', portion: 'small', confidence: 0.7 },
     ],
-    notes: 'Mock response — set EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_ANON_KEY to enable real recognition.',
+    notes: 'Offline sample plate.',
   };
 }

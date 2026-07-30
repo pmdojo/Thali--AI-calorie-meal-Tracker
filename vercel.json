@@ -5,6 +5,6 @@
   "framework": null,
   "installCommand": "echo 'install runs inside buildCommand for workspace hoisting'",
   "rewrites": [
-    { "source": "/((?!_expo|assets|favicon|.*\\..*).*)", "destination": "/" }
+    { "source": "/((?!api/|_expo|assets|favicon|.*\\..*).*)", "destination": "/" }
   ]
 }

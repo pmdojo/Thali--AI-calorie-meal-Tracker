@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radii, spacing, type } from '@thali/ui-tokens';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
@@ -12,6 +12,21 @@ import { analyzeMealImage, isRecognitionEnabled, resolveComponents } from '../..
 import type { MealType } from '../../src/store';
 
 type Stage = 'framing' | 'analyzing' | 'error';
+
+// Web-safe base64: fetch the (blob/data) uri and read it as a data URL.
+async function uriToBase64(uri: string): Promise<string> {
+  const resp = await fetch(uri);
+  const blob = await resp.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = String(reader.result || '');
+      resolve(result.includes(',') ? result.split(',')[1] : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 function inferMealType(): MealType {
   const h = new Date().getHours();
@@ -92,8 +107,9 @@ export default function CameraScreen() {
     if (!cam.current) return;
     try {
       const photo = await cam.current.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
-      if (!photo?.base64) throw new Error('no_base64_returned');
-      await handleAnalyze(photo.base64, 'image/jpeg');
+      const b64 = photo?.base64 ?? (photo?.uri ? await uriToBase64(photo.uri) : undefined);
+      if (!b64) throw new Error('no_image_captured');
+      await handleAnalyze(b64, 'image/jpeg');
     } catch (e) {
       setStage('error');
       setError(e instanceof Error ? e.message : 'capture_failed');
@@ -108,8 +124,12 @@ export default function CameraScreen() {
     });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
-    const base64 = asset.base64
-      ?? (await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 }));
+    let base64 = asset.base64 ?? undefined;
+    if (!base64) {
+      base64 = Platform.OS === 'web'
+        ? await uriToBase64(asset.uri)
+        : await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+    }
     await handleAnalyze(base64, asset.mimeType ?? 'image/jpeg');
   }
 
