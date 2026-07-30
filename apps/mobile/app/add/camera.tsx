@@ -2,31 +2,28 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { MotiView } from 'moti';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radii, spacing, type } from '@thali/ui-tokens';
-import { Button } from '../../src/components/Button';
-import { Card } from '../../src/components/Card';
-import { Screen } from '../../src/components/Screen';
-import { analyzeMealImage, isRecognitionEnabled, resolveComponents } from '../../src/supabase';
+import { ActivityIndicator, Alert, Dimensions, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { estimateMeal, getDish, type MealComponent } from '@thali/shared';
+import { colors, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
+import { Icon, IconName } from '../../src/components/Icon';
+import { analyzeMealImage, resolveComponents } from '../../src/supabase';
 import type { MealType } from '../../src/store';
 
-type Stage = 'framing' | 'analyzing' | 'error';
+const { width: W, height: H } = Dimensions.get('window');
 
-// Web-safe base64: fetch the (blob/data) uri and read it as a data URL.
-async function uriToBase64(uri: string): Promise<string> {
-  const resp = await fetch(uri);
-  const blob = await resp.blob();
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = String(reader.result || '');
-      resolve(result.includes(',') ? result.split(',')[1] : result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
+type Stage = 'framing' | 'analyzing' | 'results' | 'error';
+
+interface Detection { label: string; kcal: number | null; }
+
+const BUBBLE_POS = [
+  { top: H * 0.20, left: W * 0.30 },
+  { top: H * 0.40, left: W * 0.05 },
+  { top: H * 0.40, right: W * 0.05 },
+  { top: H * 0.58, left: W * 0.32 },
+  { top: H * 0.28, right: W * 0.08 },
+];
 
 function inferMealType(): MealType {
   const h = new Date().getHours();
@@ -36,67 +33,79 @@ function inferMealType(): MealType {
   return 'snack';
 }
 
+async function uriToBase64(uri: string): Promise<string> {
+  const resp = await fetch(uri);
+  const blob = await resp.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const r = String(reader.result || '');
+      resolve(r.includes(',') ? r.split(',')[1] : r);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cam = useRef<CameraView>(null);
   const [stage, setStage] = useState<Stage>('framing');
+  const [torch, setTorch] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captured, setCaptured] = useState<string | null>(null);
+  const [components, setComponents] = useState<MealComponent[]>([]);
+  const [detections, setDetections] = useState<Detection[]>([]);
+  const [isMock, setIsMock] = useState(false);
 
-  // Permission gate ─────────────────────────────────────────────────────
   if (!permission) {
-    return (
-      <Screen>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator />
-        </View>
-      </Screen>
-    );
+    return <View style={styles.dark}><ActivityIndicator color="#fff" /></View>;
   }
 
   if (!permission.granted) {
     return (
-      <Screen>
-        <Text style={{ ...type.h1, color: colors.text }}>Camera access</Text>
-        <Text style={{ ...type.body, color: colors.textMuted }}>
-          Thali reads the plate on-device with your camera. Photos never leave your phone unless you log the meal.
-        </Text>
-        <View style={{ flex: 1 }} />
-        <Button label="Grant camera access" onPress={requestPermission} />
-        <Button label="Pick a photo instead" variant="ghost" onPress={pickFromLibrary} />
-        <Button label="Back" variant="ghost" onPress={() => router.back()} />
-      </Screen>
+      <View style={styles.permWrap}>
+        <View style={styles.permIcon}><Icon name="camera" size={30} color="#fff" /></View>
+        <Text style={styles.permTitle}>Scan your food</Text>
+        <Text style={styles.permBody}>Thali reads the plate on-device. Photos never leave your phone unless you log the meal.</Text>
+        <Pressable style={styles.permPrimary} onPress={requestPermission}>
+          <Text style={styles.permPrimaryText}>Enable camera</Text>
+        </Pressable>
+        <Pressable style={styles.permGhost} onPress={pickFromLibrary}>
+          <Text style={styles.permGhostText}>Pick from library instead</Text>
+        </Pressable>
+        <Pressable onPress={() => router.back()} style={{ marginTop: spacing.md }}>
+          <Text style={styles.permGhostText}>Cancel</Text>
+        </Pressable>
+      </View>
     );
   }
 
-  // Analyze pipeline ────────────────────────────────────────────────────
-  async function handleAnalyze(base64: string, mimeType: string) {
+  async function runAnalyze(base64: string, mimeType: string, uri: string) {
+    setCaptured(uri);
     setStage('analyzing');
     setError(null);
     try {
       const recognition = await analyzeMealImage(base64, mimeType);
-      const { components, unresolved } = resolveComponents(recognition);
+      const { components: comps, unresolved } = resolveComponents(recognition);
+      setIsMock(recognition.mock);
 
-      if (components.length === 0) {
+      const dets: Detection[] = [
+        ...comps.map((c) => ({
+          label: getDish(c.dishId)?.name ?? c.dishId,
+          kcal: estimateMeal([c]).kcal.mid,
+        })),
+        ...unresolved.map((name) => ({ label: name, kcal: null })),
+      ];
+
+      if (comps.length === 0 && unresolved.length === 0) {
         setStage('framing');
-        Alert.alert(
-          "Couldn't match this plate",
-          unresolved.length
-            ? `Recognized ${unresolved.join(', ')} but nothing in our dish library matches yet. Try Add manually.`
-            : 'The model returned no dishes. Try a clearer, top-down photo.',
-        );
+        Alert.alert("Couldn't read the plate", 'Try a clearer, top-down photo.');
         return;
       }
-
-      router.replace({
-        pathname: '/add/review',
-        params: {
-          mealType: inferMealType(),
-          payload: JSON.stringify(components),
-          source: 'photo',
-          unresolved: unresolved.join('|'),
-          mock: recognition.mock ? '1' : '0',
-        },
-      });
+      setComponents(comps);
+      setDetections(dets);
+      setStage('results');
     } catch (e) {
       setStage('error');
       setError(e instanceof Error ? e.message : 'unknown_error');
@@ -107,9 +116,10 @@ export default function CameraScreen() {
     if (!cam.current) return;
     try {
       const photo = await cam.current.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
-      const b64 = photo?.base64 ?? (photo?.uri ? await uriToBase64(photo.uri) : undefined);
+      const uri = photo?.uri ?? '';
+      const b64 = photo?.base64 ?? (uri ? await uriToBase64(uri) : undefined);
       if (!b64) throw new Error('no_image_captured');
-      await handleAnalyze(b64, 'image/jpeg');
+      await runAnalyze(b64, 'image/jpeg', uri);
     } catch (e) {
       setStage('error');
       setError(e instanceof Error ? e.message : 'capture_failed');
@@ -118,9 +128,7 @@ export default function CameraScreen() {
 
   async function pickFromLibrary() {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      quality: 0.6,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, base64: true, quality: 0.6,
     });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
@@ -130,94 +138,222 @@ export default function CameraScreen() {
         ? await uriToBase64(asset.uri)
         : await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
     }
-    await handleAnalyze(base64, asset.mimeType ?? 'image/jpeg');
+    await runAnalyze(base64, asset.mimeType ?? 'image/jpeg', asset.uri);
   }
 
-  // Render ──────────────────────────────────────────────────────────────
+  function confirmLog() {
+    router.replace({
+      pathname: '/add/review',
+      params: {
+        mealType: inferMealType(),
+        payload: JSON.stringify(components),
+        source: 'photo',
+        mock: isMock ? '1' : '0',
+        unresolved: detections.filter((d) => d.kcal === null).map((d) => d.label).join('|'),
+      },
+    });
+  }
+
+  const totalKcal = detections.reduce((s, d) => s + (d.kcal ?? 0), 0);
+
   return (
-    <View style={styles.root}>
-      <CameraView ref={cam} style={StyleSheet.absoluteFillObject} facing="back" />
+    <View style={styles.dark}>
+      {/* Camera or frozen capture */}
+      {stage === 'results' && captured ? (
+        <Image source={{ uri: captured }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+      ) : (
+        <CameraView ref={cam} style={StyleSheet.absoluteFillObject} facing="back" enableTorch={torch} />
+      )}
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(10,8,20,0.28)' }]} pointerEvents="none" />
 
+      {/* Top bar */}
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()} style={styles.topBtn}>
-          <Text style={styles.topBtnText}>Close</Text>
+        <Pressable onPress={() => (stage === 'results' ? setStage('framing') : router.back())} style={styles.roundBtn}>
+          <Icon name={stage === 'results' ? 'arrowLeft' : 'x'} size={20} color="#fff" />
         </Pressable>
-        {!isRecognitionEnabled() && (
-          <View style={styles.devPill}>
-            <Text style={{ ...type.caption, color: colors.accent }}>Mock mode</Text>
-          </View>
-        )}
+        <Text style={styles.topTitle}>{stage === 'results' ? 'Detected' : 'Scan food'}</Text>
+        <View style={styles.roundBtn}>
+          <Icon name="sparkles" size={18} color="#fff" strokeWidth={2.2} />
+        </View>
       </View>
 
-      <View style={styles.bottomBar}>
-        <Pressable onPress={pickFromLibrary} style={styles.libBtn}>
-          <Text style={styles.libBtnText}>Library</Text>
-        </Pressable>
-        <Pressable onPress={snap} disabled={stage !== 'framing'} style={[styles.shutter, stage !== 'framing' && { opacity: 0.5 }]}>
-          <View style={styles.shutterInner} />
-        </Pressable>
-        <View style={styles.libBtn} />
-      </View>
-
-      {stage === 'analyzing' && (
-        <View style={styles.overlay}>
-          <Card style={{ alignItems: 'center', gap: spacing.md, minWidth: 220 }}>
-            <ActivityIndicator size="large" color={colors.brand} />
-            <Text style={{ ...type.bodyBold, color: colors.text }}>Reading the plate…</Text>
-            <Text style={{ ...type.caption, color: colors.textMuted, textAlign: 'center' }}>
-              Identifying components and estimating portions.
-            </Text>
-          </Card>
+      {/* Reticle (framing) */}
+      {stage === 'framing' && (
+        <View style={styles.reticle} pointerEvents="none">
+          <View style={[styles.corner, styles.tl]} />
+          <View style={[styles.corner, styles.tr]} />
+          <View style={[styles.corner, styles.bl]} />
+          <View style={[styles.corner, styles.br]} />
+          <Text style={styles.reticleHint}>Point at your plate</Text>
         </View>
       )}
 
+      {/* Analyzing */}
+      {stage === 'analyzing' && (
+        <View style={styles.center} pointerEvents="none">
+          <View style={styles.reticle}>
+            <View style={[styles.corner, styles.tl]} />
+            <View style={[styles.corner, styles.tr]} />
+            <View style={[styles.corner, styles.bl]} />
+            <View style={[styles.corner, styles.br]} />
+            <MotiView
+              from={{ translateY: -90 }} animate={{ translateY: 90 }}
+              transition={{ type: 'timing', duration: 1100, loop: true, repeatReverse: true }}
+              style={styles.scanLine}
+            />
+          </View>
+          <View style={styles.analyzingPill}>
+            <ActivityIndicator color="#fff" size="small" />
+            <Text style={styles.analyzingText}>Reading your plate…</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Detection bubbles */}
+      {stage === 'results' && detections.map((d, i) => {
+        const pos = BUBBLE_POS[i % BUBBLE_POS.length];
+        return (
+          <MotiView
+            key={i}
+            from={{ opacity: 0, scale: 0.5, translateY: 8 }}
+            animate={{ opacity: 1, scale: 1, translateY: 0 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 220, delay: i * 130 }}
+            style={[styles.bubble, pos as object]}
+          >
+            <Text style={styles.bubbleLabel} numberOfLines={1}>{d.label}</Text>
+            <Text style={styles.bubbleKcal}>{d.kcal !== null ? `${d.kcal} kcal` : 'tap to match'}</Text>
+          </MotiView>
+        );
+      })}
+
+      {/* Bottom controls */}
+      {stage === 'framing' && (
+        <View style={styles.bottom}>
+          <View style={styles.modeRow}>
+            <Mode icon="scan" label="Scan Food" active />
+            <Mode icon="target" label="Barcode" onPress={() => Alert.alert('Coming soon', 'Barcode scanning is on the roadmap.')} />
+            <Mode icon="bookmark" label="Food label" onPress={() => Alert.alert('Coming soon', 'Nutrition-label scanning is on the roadmap.')} />
+            <Mode icon="imageIcon" label="Library" onPress={pickFromLibrary} />
+          </View>
+          <View style={styles.shutterRow}>
+            <Pressable onPress={() => setTorch((v) => !v)} style={styles.sideBtn}>
+              <Icon name="zap" size={22} color={torch ? colors.gold : '#fff'} strokeWidth={2.2} />
+            </Pressable>
+            <Pressable onPress={snap} style={styles.shutter}>
+              <View style={styles.shutterInner} />
+            </Pressable>
+            <Pressable onPress={pickFromLibrary} style={styles.sideBtn}>
+              <Icon name="imageIcon" size={22} color="#fff" strokeWidth={2.2} />
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {/* Results action bar */}
+      {stage === 'results' && (
+        <MotiView
+          from={{ translateY: 120, opacity: 0 }} animate={{ translateY: 0, opacity: 1 }}
+          transition={{ type: 'spring', damping: 20, stiffness: 220, delay: 300 }}
+          style={styles.resultBar}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.resultTitle}>{detections.length} item{detections.length > 1 ? 's' : ''} · ~{totalKcal} kcal</Text>
+            <Text style={styles.resultSub}>{isMock ? 'Demo recognition' : 'AI recognition'} · tap Log to adjust</Text>
+          </View>
+          <Pressable onPress={() => setStage('framing')} style={styles.retake}>
+            <Icon name="camera" size={20} color="#fff" />
+          </Pressable>
+          <Pressable onPress={confirmLog} style={styles.logBtn}>
+            <Icon name="check" size={18} color="#fff" strokeWidth={2.6} />
+            <Text style={styles.logText}>Log meal</Text>
+          </Pressable>
+        </MotiView>
+      )}
+
+      {/* Error */}
       {stage === 'error' && (
-        <View style={styles.overlay}>
-          <Card style={{ gap: spacing.md, minWidth: 260 }}>
-            <Text style={{ ...type.h3, color: colors.text }}>Couldn't analyze</Text>
-            <Text style={{ ...type.body, color: colors.textMuted }}>{error ?? 'Unknown error.'}</Text>
-            <Button label="Try again" onPress={() => setStage('framing')} />
-            <Button label="Add manually instead" variant="ghost" onPress={() => router.replace('/add/manual')} />
-          </Card>
+        <View style={styles.center}>
+          <View style={styles.errCard}>
+            <Text style={[t.h3, { color: colors.text }]}>Couldn't analyze</Text>
+            <Text style={[t.body, { color: colors.textMuted }]}>{error ?? 'Unknown error.'}</Text>
+            <Pressable onPress={() => setStage('framing')} style={styles.errBtn}><Text style={styles.errBtnText}>Try again</Text></Pressable>
+          </View>
         </View>
       )}
     </View>
   );
 }
 
+function Mode({ icon, label, active, onPress }: { icon: IconName; label: string; active?: boolean; onPress?: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={[styles.mode, active && styles.modeActive]}>
+      <Icon name={icon} size={16} color={active ? colors.success : '#fff'} strokeWidth={2.2} />
+      <Text style={[styles.modeLabel, active && { color: colors.success }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' },
-  topBar: {
-    position: 'absolute',
-    top: 60, left: 20, right: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  dark: { flex: 1, backgroundColor: '#0A0814' },
+  center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+
+  // Permission
+  permWrap: { flex: 1, backgroundColor: '#0A0814', alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
+  permIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
+  permTitle: { fontSize: 24, fontWeight: '800', color: '#fff' },
+  permBody: { ...t.body, color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: 300 },
+  permPrimary: { backgroundColor: colors.brand, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 999, marginTop: spacing.md, ...shadow.brandGlow },
+  permPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  permGhost: { paddingVertical: 10 },
+  permGhostText: { color: 'rgba(255,255,255,0.75)', fontWeight: '600' },
+
+  topBar: { position: 'absolute', top: 56, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 },
+  roundBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  topTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
+
+  reticle: { position: 'absolute', top: H * 0.28, left: W * 0.5 - 120, width: 240, height: 240, alignItems: 'center', justifyContent: 'center' },
+  corner: { position: 'absolute', width: 40, height: 40, borderColor: '#fff' },
+  tl: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 16 },
+  tr: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 16 },
+  bl: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 16 },
+  br: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 16 },
+  reticleHint: { color: 'rgba(255,255,255,0.85)', fontWeight: '600', fontSize: 13, marginTop: 260 },
+  scanLine: { width: 200, height: 3, borderRadius: 2, backgroundColor: colors.success, shadowColor: colors.success, shadowOpacity: 0.8, shadowRadius: 8 },
+
+  analyzingPill: { position: 'absolute', bottom: H * 0.16, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(0,0,0,0.6)', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 999 },
+  analyzingText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+
+  bubble: {
+    position: 'absolute', backgroundColor: '#fff', borderRadius: 16,
+    paddingVertical: 8, paddingHorizontal: 14, alignItems: 'center', minWidth: 92,
+    ...shadow.floating,
   },
-  topBtn: { backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: radii.pill },
-  topBtnText: { ...type.bodyBold, color: '#fff' },
-  devPill: { backgroundColor: colors.accentSoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radii.pill },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 60, left: 0, right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: spacing.xl,
+  bubbleLabel: { fontSize: 14, fontWeight: '800', color: colors.text },
+  bubbleKcal: { fontSize: 11, fontWeight: '600', color: colors.accent, marginTop: 1 },
+
+  bottom: { position: 'absolute', bottom: 40, left: 0, right: 0, gap: spacing.xl },
+  modeRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, justifyContent: 'center' },
+  mode: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.14)' },
+  modeActive: { backgroundColor: '#fff' },
+  modeLabel: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  shutterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: spacing.xxl },
+  sideBtn: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  shutter: { width: 82, height: 82, borderRadius: 41, borderWidth: 5, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  shutterInner: { width: 66, height: 66, borderRadius: 33, backgroundColor: '#fff' },
+
+  resultBar: {
+    position: 'absolute', bottom: 40, left: spacing.lg, right: spacing.lg,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: 'rgba(20,16,32,0.86)', borderRadius: radii.xxl, padding: spacing.md,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
   },
-  libBtn: { minWidth: 70, alignItems: 'center' },
-  libBtnText: { ...type.body, color: '#fff', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: radii.pill, overflow: 'hidden' },
-  shutter: {
-    width: 78, height: 78, borderRadius: 39,
-    borderWidth: 4, borderColor: '#fff',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  shutterInner: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#fff' },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
+  resultTitle: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  resultSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 1 },
+  retake: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  logBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.success, paddingVertical: 13, paddingHorizontal: 18, borderRadius: 999 },
+  logText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+
+  errCard: { backgroundColor: '#fff', borderRadius: radii.xl, padding: spacing.xl, gap: spacing.sm, margin: spacing.xl, alignItems: 'flex-start' },
+  errBtn: { backgroundColor: colors.brand, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 999, marginTop: spacing.sm },
+  errBtnText: { color: '#fff', fontWeight: '700' },
 });
