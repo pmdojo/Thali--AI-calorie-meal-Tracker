@@ -11,10 +11,16 @@ interface Draft {
   targetWeightKg?: number;
   dietary?: DietaryPreference;
   allergies?: string[];
+  usualFoods?: string[];
+  conditions?: string[];
   reset: () => void;
 }
 
-// In-memory only — a step's confirm writes to the persisted store.
+// In-memory only — the final review step writes to the persisted store.
 export const useOnboardingDraft = create<Draft>((set) => ({
-  reset: () => set({ age: undefined, sex: undefined, heightCm: undefined, weightKg: undefined, activity: undefined, goal: undefined, targetWeightKg: undefined, dietary: undefined, allergies: undefined }),
+  reset: () => set({
+    age: undefined, sex: undefined, heightCm: undefined, weightKg: undefined,
+    activity: undefined, goal: undefined, targetWeightKg: undefined,
+    dietary: undefined, allergies: undefined, usualFoods: undefined, conditions: undefined,
+  }),
 }));

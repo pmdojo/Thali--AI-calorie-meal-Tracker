@@ -25,6 +25,8 @@ export interface UserProfile {
   targetWeightKg?: number;
   dietary: DietaryPreference;
   allergies?: string[];
+  usualFoods?: string[];   // ids of what's usually on the plate (dal, sabzi, rice, roti, fish, chicken…)
+  conditions?: string[];   // ids of medical conditions (pcos, diabetes, high_bp…)
 }
 
 export interface MacroSplit {

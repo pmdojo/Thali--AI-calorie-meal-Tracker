@@ -7,7 +7,7 @@ import { Button } from '../../src/components/Button';
 import { Choice, Field } from '../../src/components/Field';
 import { Icon } from '../../src/components/Icon';
 import { Screen } from '../../src/components/Screen';
-import { StepHeader } from '../../src/components/StepHeader';
+import { ThaliPrompt } from '../../src/components/Thali';
 import { useOnboardingDraft } from '../../src/onboardingDraft';
 
 export default function Basics() {
@@ -19,29 +19,21 @@ export default function Basics() {
 
   const canNext = age && heightCm && weightKg && sex;
 
-  const footer = (
-    <Button
-      label="Continue"
-      disabled={!canNext}
-      trailing={<Icon name="arrowR" size={18} color="#fff" strokeWidth={2.4} />}
-      onPress={() => {
-        useOnboardingDraft.setState({
-          age: Number(age), heightCm: Number(heightCm), weightKg: Number(weightKg), sex,
-        });
-        router.push('/onboarding/activity');
-      }}
-    />
-  );
-
   return (
-    <Screen bg="parchment" footer={footer}>
-      <StepHeader
-        step={1} total={5}
-        title="A few basics"
-        subtitle="Four numbers set your daily calorie budget."
+    <Screen bg="parchment" footer={
+      <Button
+        label="Continue"
+        disabled={!canNext}
+        trailing={<Icon name="arrowR" size={18} color="#fff" strokeWidth={2.4} />}
+        onPress={() => {
+          useOnboardingDraft.setState({ age: Number(age), heightCm: Number(heightCm), weightKg: Number(weightKg), sex });
+          router.push('/onboarding/activity');
+        }}
       />
+    }>
+      <ThaliPrompt step={2} total={6} message="Tell me a bit about you — this sets your calorie budget." />
 
-      <View style={{ gap: 6, marginTop: spacing.md }}>
+      <View style={{ gap: 6, marginTop: spacing.xs }}>
         <Text style={[t.captionBold, { color: colors.textMuted }]}>Sex</Text>
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
           <Choice label="Female" selected={sex === 'female'} onPress={() => setSex('female')} />

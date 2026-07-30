@@ -3,24 +3,30 @@ import { MotiView } from 'moti';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { computeDailyBudget, type UserProfile } from '@thali/shared';
+import { computeDailyBudget, type DietaryPreference, type UserProfile } from '@thali/shared';
 import { colors, gradients, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
 import { Icon } from '../../src/components/Icon';
 import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
-import { StepHeader } from '../../src/components/StepHeader';
+import { ThaliPrompt } from '../../src/components/Thali';
+import { VisualThali } from '../../src/components/VisualThali';
 import { useOnboardingDraft } from '../../src/onboardingDraft';
 import { useStore } from '../../src/store';
+
+const NON_VEG = ['fish', 'chicken', 'egg'];
 
 export default function Review() {
   const draft = useOnboardingDraft();
 
   const profile: UserProfile | null = useMemo(() => {
-    const { age, sex, heightCm, weightKg, activity, goal, dietary, targetWeightKg, allergies } = draft;
-    if (!age || !sex || !heightCm || !weightKg || !activity || !goal || !dietary) return null;
-    return { age, sex, heightCm, weightKg, activity, goal, dietary, targetWeightKg, allergies };
+    const { age, sex, heightCm, weightKg, activity, goal, targetWeightKg, usualFoods, conditions } = draft;
+    if (!age || !sex || !heightCm || !weightKg || !activity || !goal) return null;
+    const dietary: DietaryPreference = (usualFoods ?? []).some((f) => NON_VEG.includes(f))
+      ? 'non_vegetarian'
+      : 'vegetarian';
+    return { age, sex, heightCm, weightKg, activity, goal, targetWeightKg, dietary, usualFoods, conditions };
   }, [draft]);
 
   const budget = profile ? computeDailyBudget(profile) : null;
@@ -39,29 +45,30 @@ export default function Review() {
         }}
       />
     }>
-      <StepHeader
-        step={5} total={5}
-        title="Your daily plan"
-        subtitle="Mifflin-St Jeor + your activity level. Adjustable in Profile."
-      />
+      <ThaliPrompt step={6} total={6} message="Done! Here's the plan I built for you." />
 
+      {/* Visual thali */}
+      <View style={{ alignItems: 'center', marginTop: spacing.sm, marginBottom: spacing.lg }}>
+        <VisualThali size={280} caption="Your balanced thali" />
+      </View>
+
+      {/* Budget hero */}
       {budget && (
         <MotiView
           from={{ opacity: 0, translateY: 12, scale: 0.96 }}
           animate={{ opacity: 1, translateY: 0, scale: 1 }}
-          transition={{ type: 'spring', damping: 18, stiffness: 220 }}
+          transition={{ type: 'spring', damping: 18, stiffness: 220, delay: 300 }}
         >
           <View style={styles.hero}>
             <LinearGradient colors={gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
             <Text style={styles.heroLabel}>Daily budget</Text>
-            <Text style={styles.heroKcal}>
-              {budget.kcal}<Text style={styles.heroUnit}> kcal</Text>
-            </Text>
+            <Text style={styles.heroKcal}>{budget.kcal}<Text style={styles.heroUnit}> kcal</Text></Text>
             <Text style={styles.heroFoot}>BMR {budget.bmr} · TDEE {budget.tdee}</Text>
           </View>
         </MotiView>
       )}
 
+      {/* Macros */}
       {budget && (
         <Card padding="lg" elevation="card" style={{ gap: spacing.md }}>
           <Text style={[t.h3, { color: colors.text }]}>Macros</Text>
@@ -83,15 +90,21 @@ export default function Review() {
         </Card>
       )}
 
-      <Card tone="lavender" padding="lg" style={{ gap: spacing.sm }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <Icon name="info" size={16} color={colors.brand} />
-          <Text style={[t.captionBold, { color: colors.text }]}>How Thali stays honest</Text>
-        </View>
-        <Text style={[t.caption, { color: colors.textMuted }]}>
-          Every meal is a range with a confidence band, not a point estimate. If a plate would eat more than 40% of what's left in your day, we surface one concrete swap — never a lecture.
-        </Text>
-      </Card>
+      {/* Personalisation summary */}
+      {profile && (
+        <Card tone="lavender" padding="lg" style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Icon name="sparkles" size={16} color={colors.brand} />
+            <Text style={[t.captionBold, { color: colors.text }]}>Tuned to you</Text>
+          </View>
+          <Text style={[t.caption, { color: colors.textMuted }]}>
+            {profile.dietary === 'non_vegetarian' ? 'Non-veg friendly' : 'Vegetarian'} · calibrated for {(profile.usualFoods ?? []).length || 'your'} everyday foods
+            {profile.conditions && profile.conditions.length > 0
+              ? ` · mindful of ${profile.conditions.join(', ').replace(/_/g, ' ')}`
+              : ''}.
+          </Text>
+        </Card>
+      )}
     </Screen>
   );
 }
@@ -117,7 +130,7 @@ const styles = StyleSheet.create({
     ...shadow.brandGlow,
   },
   heroLabel: { color: 'rgba(255,255,255,0.85)', ...t.tiny, textTransform: 'uppercase' },
-  heroKcal:  { color: '#fff', fontSize: 72, fontWeight: '800', letterSpacing: -3, marginTop: 4 },
-  heroUnit:  { fontSize: 20, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
+  heroKcal:  { color: '#fff', fontSize: 64, fontWeight: '800', letterSpacing: -2.5, marginTop: 4 },
+  heroUnit:  { fontSize: 18, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
   heroFoot:  { color: 'rgba(255,255,255,0.75)', ...t.caption, marginTop: 4 },
 });

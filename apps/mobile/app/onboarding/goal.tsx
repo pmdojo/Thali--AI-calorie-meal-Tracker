@@ -1,19 +1,19 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { spacing } from '@thali/ui-tokens';
 import type { Goal } from '@thali/shared';
 import { Button } from '../../src/components/Button';
 import { Field, OptionCard } from '../../src/components/Field';
 import { Icon } from '../../src/components/Icon';
 import { Screen } from '../../src/components/Screen';
-import { StepHeader } from '../../src/components/StepHeader';
+import { ThaliPrompt } from '../../src/components/Thali';
 import { useOnboardingDraft } from '../../src/onboardingDraft';
 
-const OPTIONS: Array<{ id: Goal; title: string; sub: string; icon: import('../../src/components/Icon').IconName }> = [
-  { id: 'lose',     title: 'Lose weight',   sub: 'Slow, sustainable — around 0.5% / week', icon: 'arrowDown' },
-  { id: 'maintain', title: 'Maintain',      sub: 'Same weight, week after week',           icon: 'target' },
-  { id: 'gain',     title: 'Gain muscle',   sub: 'Modest surplus with a protein floor',     icon: 'arrowUp' },
+const OPTIONS: Array<{ id: Goal; title: string; sub: string; emoji: string }> = [
+  { id: 'lose',     title: 'Lose fat',     sub: 'Slow and sustainable — ~0.5% / week', emoji: '🔥' },
+  { id: 'gain',     title: 'Build muscle', sub: 'Modest surplus with a protein floor',  emoji: '💪' },
+  { id: 'maintain', title: 'Maintain',     sub: 'Hold steady, eat with awareness',      emoji: '⚖️' },
 ];
 
 export default function GoalScreen() {
@@ -31,17 +31,13 @@ export default function GoalScreen() {
         trailing={<Icon name="arrowR" size={18} color="#fff" strokeWidth={2.4} />}
         onPress={() => {
           useOnboardingDraft.setState({ goal, targetWeightKg: needsTarget ? Number(target) : undefined });
-          router.push('/onboarding/diet');
+          router.push('/onboarding/basics');
         }}
       />
     }>
-      <StepHeader
-        step={3} total={5}
-        title="What's the goal?"
-        subtitle="Thali sets a sustainable rate — no crash diets."
-      />
+      <ThaliPrompt step={1} total={6} message="First — what's your goal?" />
 
-      <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+      <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
         {OPTIONS.map((o) => (
           <OptionCard
             key={o.id}
@@ -49,19 +45,13 @@ export default function GoalScreen() {
             subtitle={o.sub}
             selected={goal === o.id}
             onPress={() => setGoal(o.id)}
-            icon={<Icon name={o.icon} size={20} color={goal === o.id ? '#fff' : '#5B3FE0'} strokeWidth={2} />}
+            icon={<Text style={{ fontSize: 20 }}>{o.emoji}</Text>}
           />
         ))}
       </View>
 
       {needsTarget && (
-        <Field
-          label="Target weight"
-          value={target}
-          onChangeText={setTarget}
-          keyboardType="decimal-pad"
-          suffix="kg"
-        />
+        <Field label="Target weight" value={target} onChangeText={setTarget} keyboardType="decimal-pad" suffix="kg" />
       )}
     </Screen>
   );
