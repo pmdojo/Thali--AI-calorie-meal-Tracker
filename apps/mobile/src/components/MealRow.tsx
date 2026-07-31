@@ -2,7 +2,8 @@ import { MotiView } from 'moti';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
-import { Icon, IconName } from './Icon';
+import { FoodArt } from './FoodArt';
+import { Icon } from './Icon';
 
 interface Props {
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
@@ -15,11 +16,11 @@ interface Props {
   index?: number;
 }
 
-const META: Record<Props['mealType'], { label: string; icon: IconName; grad: string }> = {
-  breakfast: { label: 'Breakfast', icon: 'sunrise', grad: '#E4F6FF' },
-  lunch:     { label: 'Lunch',     icon: 'sun',     grad: '#E7F0FF' },
-  dinner:    { label: 'Dinner',    icon: 'moon',    grad: '#EDEBFF' },
-  snack:     { label: 'Snack',     icon: 'cookie',  grad: '#E6F7F1' },
+const META: Record<Props['mealType'], { label: string; grad: string }> = {
+  breakfast: { label: 'Breakfast', grad: '#E4F6FF' },
+  lunch:     { label: 'Lunch',     grad: '#E7F0FF' },
+  dinner:    { label: 'Dinner',    grad: '#EDEBFF' },
+  snack:     { label: 'Snack',     grad: '#EAF1FF' },
 };
 
 export function MealRow({ mealType, items, kcalLow, kcalHigh, confidence, time, wasSwapped, index = 0 }: Props) {
@@ -32,7 +33,7 @@ export function MealRow({ mealType, items, kcalLow, kcalHigh, confidence, time, 
       style={[styles.wrap, shadow.card]}
     >
       <View style={[styles.icon, { backgroundColor: meta.grad }]}>
-        <Icon name={meta.icon} size={20} color={colors.text} strokeWidth={1.8} />
+        <FoodArt kind={mealType} size={28} />
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <View style={styles.headRow}>

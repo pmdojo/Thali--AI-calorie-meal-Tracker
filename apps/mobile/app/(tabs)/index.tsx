@@ -6,9 +6,8 @@ import { AICoachCard } from '../../src/components/AICoachCard';
 import { Card } from '../../src/components/Card';
 import { FAB } from '../../src/components/FAB';
 import { HabitCard } from '../../src/components/HabitCard';
-import { HeroRing } from '../../src/components/HeroRing';
+import { DonutChart } from '../../src/components/DonutChart';
 import { Icon } from '../../src/components/Icon';
-import { Mascot, StickerTag } from '../../src/components/Kawaii';
 import { MealRow } from '../../src/components/MealRow';
 import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
@@ -75,37 +74,26 @@ export default function Home() {
       <Screen bg="parchment">
         {/* ─── Greeting bar ───────────────────────────────────────── */}
         <View style={styles.topRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, flex: 1 }}>
-            <Mascot size={48} />
-            <View style={{ flex: 1, gap: 3 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Icon name={g.icon} size={15} color={colors.textMuted} strokeWidth={2} />
-                <Text style={[t.captionBold, { color: colors.textMuted }]}>{g.hi}</Text>
-              </View>
-              <Text style={[t.h2, { color: colors.text }]}>How's today going?</Text>
+          <View style={{ flex: 1, gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon name={g.icon} size={15} color={colors.textMuted} strokeWidth={2} />
+              <Text style={[t.captionBold, { color: colors.textMuted }]}>{g.hi}</Text>
             </View>
+            <Text style={[t.h1, { color: colors.text }]}>How's today going?</Text>
           </View>
           <Pressable style={styles.avatar} onPress={() => router.push('/(tabs)/profile')}>
             <Icon name="user" size={20} color={colors.text} />
           </Pressable>
         </View>
 
-        {/* ─── Hero ring + streak on top ───────────────────────────── */}
-        <View>
-          <StickerTag label="On track!" tone="yellow" rotate={-9} style={{ position: 'absolute', top: -12, right: 18, zIndex: 20 }} />
-          <StickerTag label="Nice 🎉" tone="pink" rotate={8} style={{ position: 'absolute', top: 96, left: -6, zIndex: 20 }} />
+        {/* ─── Hero donut + streak ─────────────────────────────────── */}
         <Card tone="glassStrong" padding="lg" elevation="cardHover" radius="xxl" style={{ alignItems: 'center', gap: spacing.md }}>
           <View style={styles.streakRow}>
             <StreakBadge count={streak.logged} label={`of ${streak.total} days`} />
             <Pill label="On track" icon="check" tone="success" />
           </View>
 
-          <HeroRing
-            progress={progress}
-            consumed={consumed}
-            remaining={remaining}
-            budget={budget?.kcal ?? 0}
-          />
+          <DonutChart consumed={consumed} budget={budget?.kcal ?? 0} size={238} />
 
           <View style={styles.miniStats}>
             <MiniStat icon="flame" label="Consumed" value={`${Math.round(consumed)}`} color={colors.accent} />
@@ -115,7 +103,6 @@ export default function Home() {
             <MiniStat icon="trending" label="Pace"   value={`${budget?.weeklyRateKgPerWeek ?? 0} kg/wk`} color={colors.success} />
           </View>
         </Card>
-        </View>
 
         {/* ─── AI Coach ────────────────────────────────────────────── */}
         <AICoachCard
