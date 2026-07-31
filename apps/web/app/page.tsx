@@ -1,5 +1,6 @@
 import { WaitlistForm } from './waitlist-form';
 import { PhoneMockup } from './phone-mockup';
+import { Reveal, RevealStagger, RevealItem } from './reveal';
 import s from './page.module.css';
 
 const APP_URL = 'https://thali-ai.vercel.app';
@@ -21,7 +22,7 @@ export default function Landing() {
       {/* Hero */}
       <header className={s.hero}>
         <div className={`container ${s.heroGrid}`}>
-          <div className={s.heroCopy}>
+          <Reveal className={s.heroCopy}>
             <span className={s.eyebrow}>✨ Meet Thali AI</span>
             <h1 className={s.headline}>
               The nutrition coach<br />that <span className={s.grad}>speaks your food.</span>
@@ -42,52 +43,66 @@ export default function Landing() {
               <a href="#waitlist" className={s.ctaGhost}>Join the waitlist</a>
             </div>
             <p className={s.trust}>No sign-up · No card · Real AI recognition on your own photos.</p>
-          </div>
+          </Reveal>
 
-          <div className={s.heroPhone}>
+          <Reveal className={s.heroPhone} delay={0.15} y={40}>
             <span className={`${s.floatEmoji} ${s.fe1}`}>🥗</span>
             <span className={`${s.floatEmoji} ${s.fe2}`}>🫓</span>
             <span className={`${s.floatEmoji} ${s.fe3}`}>🥣</span>
             <PhoneMockup />
-          </div>
+          </Reveal>
         </div>
       </header>
 
       {/* Feature trio */}
       <section className={s.section}>
         <div className="container">
-          <h2 className={s.h2}>Not another calorie app</h2>
-          <div className={s.grid3}>
-            <Feature emoji="🍛" title="Calibrated for Indian food"
-              body="A curated dish reference with per-portion gram weights — not a global database that guesses on your dal-chawal-sabzi thali." />
-            <Feature emoji="📈" title="Ranges, not fake precision"
-              body="Every estimate ships with a confidence band. Point estimates on photo-guessed home food are a claim the science can't back." />
-            <Feature emoji="🔄" title="One better choice, not a lecture"
-              body="If a meal is a lot for what's left in your day, you get a single concrete swap — tap it or ignore it. Never five buttons and a chart." />
-          </div>
+          <Reveal><h2 className={s.h2}>Not another calorie app</h2></Reveal>
+          <RevealStagger className={s.grid3}>
+            <RevealItem className={s.card}>
+              <Feature emoji="🍛" title="Calibrated for Indian food"
+                body="A curated dish reference with per-portion gram weights — not a global database that guesses on your dal-chawal-sabzi thali." />
+            </RevealItem>
+            <RevealItem className={s.card}>
+              <Feature emoji="📈" title="Ranges, not fake precision"
+                body="Every estimate ships with a confidence band. Point estimates on photo-guessed home food are a claim the science can't back." />
+            </RevealItem>
+            <RevealItem className={s.card}>
+              <Feature emoji="🔄" title="One better choice, not a lecture"
+                body="If a meal is a lot for what's left in your day, you get a single concrete swap — tap it or ignore it. Never five buttons and a chart." />
+            </RevealItem>
+          </RevealStagger>
         </div>
       </section>
 
       {/* How it works */}
       <section className={`${s.section} ${s.sectionAlt}`}>
         <div className="container">
-          <h2 className={s.h2}>Snap. See. Decide.</h2>
-          <div className={s.steps}>
-            <Step n="1" title="Snap the plate" body="Or speak it, or add it manually. Thali recognises the dishes and estimates portions." />
-            <Step n="2" title="See it against your day" body="A calibrated range lands against your remaining budget — set once from your goal." />
-            <Step n="3" title="Decide, don't just log" body="Over budget? One same-dish swap that saves real calories. Your call." />
-          </div>
+          <Reveal><h2 className={s.h2}>Snap. See. Decide.</h2></Reveal>
+          <RevealStagger className={s.steps}>
+            <RevealItem className={s.step}>
+              <Step n="1" title="Snap the plate" body="Or speak it, or add it manually. Thali recognises the dishes and estimates portions." />
+            </RevealItem>
+            <RevealItem className={s.step}>
+              <Step n="2" title="See it against your day" body="A calibrated range lands against your remaining budget — set once from your goal." />
+            </RevealItem>
+            <RevealItem className={s.step}>
+              <Step n="3" title="Decide, don't just log" body="Over budget? One same-dish swap that saves real calories. Your call." />
+            </RevealItem>
+          </RevealStagger>
         </div>
       </section>
 
       {/* Waitlist */}
       <section id="waitlist" className={s.section}>
         <div className="container">
-          <div className={s.waitCard}>
-            <h2 className={s.waitTitle}>Be first on iOS</h2>
-            <p className={s.waitSub}>The web app is live now. Drop your email for a TestFlight invite when the native build ships.</p>
-            <WaitlistForm />
-          </div>
+          <Reveal>
+            <div className={s.waitCard}>
+              <h2 className={s.waitTitle}>Be first on iOS</h2>
+              <p className={s.waitSub}>The web app is live now. Drop your email for a TestFlight invite when the native build ships.</p>
+              <WaitlistForm />
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -106,22 +121,22 @@ export default function Landing() {
 
 function Feature({ emoji, title, body }: { emoji: string; title: string; body: string }) {
   return (
-    <div className={s.card}>
+    <>
       <div className={s.cardEmoji}>{emoji}</div>
       <h3 className={s.cardTitle}>{title}</h3>
       <p className={s.cardBody}>{body}</p>
-    </div>
+    </>
   );
 }
 
 function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <div className={s.step}>
+    <>
       <div className={s.stepNum}>{n}</div>
       <div>
         <h3 className={s.stepTitle}>{title}</h3>
         <p className={s.stepBody}>{body}</p>
       </div>
-    </div>
+    </>
   );
 }
