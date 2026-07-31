@@ -21,8 +21,8 @@ export function HeroRing({ progress, size = 220, strokeWidth = 20, consumed, rem
   const c = 2 * Math.PI * r;
   const dashOffset = c * (1 - Math.min(1, clamped));
   const isOver = progress > 1;
-  const strokeColorA = isOver ? '#DC5350' : '#7A5AF8';
-  const strokeColorB = isOver ? '#F26B3A' : '#F26B3A';
+  const strokeColorA = isOver ? '#FF7A5F' : '#6EA8FF';
+  const strokeColorB = isOver ? '#FF5A5F' : '#73D6FF';
 
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
@@ -31,7 +31,7 @@ export function HeroRing({ progress, size = 220, strokeWidth = 20, consumed, rem
         from={{ opacity: 0.4, scale: 0.95 }}
         animate={{ opacity: 0.75, scale: 1.02 }}
         transition={{ type: 'timing', duration: 2600, loop: true, repeatReverse: true }}
-        style={[styles.glow, { width: size * 0.88, height: size * 0.88, borderRadius: size, backgroundColor: isOver ? '#F26B3A' : '#B291FF' }]}
+        style={[styles.glow, { width: size * 0.88, height: size * 0.88, borderRadius: size, backgroundColor: isOver ? '#FF9E8F' : '#9BC7FF' }]}
       />
 
       <Svg width={size} height={size}>
@@ -45,7 +45,7 @@ export function HeroRing({ progress, size = 220, strokeWidth = 20, consumed, rem
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke="rgba(122,90,248,0.10)"
+          stroke="rgba(110,168,255,0.14)"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     opacity: 0.5,
     // shadow-like blur via native shadow (works on iOS + web)
-    shadowColor: '#7A5AF8',
+    shadowColor: '#6EA8FF',
     shadowOpacity: 0.5,
     shadowRadius: 40,
     shadowOffset: { width: 0, height: 0 },

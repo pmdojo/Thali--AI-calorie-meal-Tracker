@@ -20,7 +20,7 @@ export function AICoachCard({ headline, body, tag = 'AI Coach', ctaLabel, onCta 
   return (
     <View style={[styles.wrap, shadow.brandGlow]}>
       <LinearGradient
-        colors={['#1D1A3D', '#3F2F7A', '#7A5AF8']}
+        colors={['#3E5C9A', '#4C8AF0', '#73D6FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}

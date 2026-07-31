@@ -6,8 +6,10 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F7F4EE",
-    "assetBundlePatterns": ["**/*"],
+    "backgroundColor": "#EAF6FC",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.pmdojo.thali",
@@ -18,7 +20,10 @@
     },
     "android": {
       "package": "com.pmdojo.thali",
-      "permissions": ["android.permission.CAMERA", "android.permission.READ_EXTERNAL_STORAGE"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -33,7 +38,8 @@
         {
           "photosPermission": "Thali reads photos from your library so you can estimate meals you already snapped."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

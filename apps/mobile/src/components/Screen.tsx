@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView } from 'moti';
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,29 +15,38 @@ interface ScreenProps {
 }
 
 const PADDING: Record<NonNullable<ScreenProps['padding']>, number> = {
-  none: 0,
-  tight: spacing.md,
-  default: spacing.xl,
-  hero: 0,
+  none: 0, tight: spacing.md, default: spacing.xl, hero: 0,
 };
 
+// Soft pastel blobs float behind the content so the frosted glass cards
+// have something colourful to blur.
+function Blobs() {
+  return (
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      <MotiView
+        from={{ translateY: 0, translateX: 0 }} animate={{ translateY: 18, translateX: 10 }}
+        transition={{ type: 'timing', duration: 7000, loop: true, repeatReverse: true }}
+        style={[styles.blob, { top: -40, right: -30, backgroundColor: '#8FC7FF' }]}
+      />
+      <MotiView
+        from={{ translateY: 0 }} animate={{ translateY: -22 }}
+        transition={{ type: 'timing', duration: 8000, loop: true, repeatReverse: true }}
+        style={[styles.blob, { top: 220, left: -60, backgroundColor: '#C9BFFF' }]}
+      />
+      <MotiView
+        from={{ translateX: 0 }} animate={{ translateX: 16 }}
+        transition={{ type: 'timing', duration: 9000, loop: true, repeatReverse: true }}
+        style={[styles.blob, { bottom: 40, right: -50, backgroundColor: '#9BE7FF' }]}
+      />
+    </View>
+  );
+}
+
 export function Screen({
-  children,
-  scroll = true,
-  edges = ['top', 'left', 'right'],
-  bg = 'parchment',
-  padding = 'default',
-  footer,
+  children, scroll = true, edges = ['top', 'left', 'right'],
+  bg = 'parchment', padding = 'default', footer,
 }: ScreenProps) {
   const pad = PADDING[padding];
-  const bgNode = bg === 'flat'
-    ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.bg }]} />
-    : <LinearGradient
-        colors={bg === 'sunrise' ? gradients.sunrise : gradients.parchment}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      />;
 
   const content = scroll ? (
     <ScrollView
@@ -51,24 +61,26 @@ export function Screen({
 
   return (
     <View style={{ flex: 1 }}>
-      {bgNode}
-      <SafeAreaView edges={edges} style={{ flex: 1 }}>
-        {content}
-      </SafeAreaView>
+      {bg === 'flat'
+        ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.bg }]} />
+        : <LinearGradient colors={bg === 'sunrise' ? gradients.sunrise : gradients.parchment} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />}
+      {bg !== 'flat' && <Blobs />}
+      <SafeAreaView edges={edges} style={{ flex: 1 }}>{content}</SafeAreaView>
       {footer && (
-        <View pointerEvents="box-none" style={styles.footer}>
-          {footer}
-        </View>
+        <View pointerEvents="box-none" style={styles.footer}>{footer}</View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  footer: {
+  blob: {
     position: 'absolute',
-    left: 0, right: 0, bottom: 0,
-    padding: spacing.xl,
-    paddingBottom: spacing.xxl,
+    width: 260, height: 260, borderRadius: 130,
+    opacity: 0.35,
+  },
+  footer: {
+    position: 'absolute', left: 0, right: 0, bottom: 0,
+    padding: spacing.xl, paddingBottom: spacing.xxl,
   },
 });
