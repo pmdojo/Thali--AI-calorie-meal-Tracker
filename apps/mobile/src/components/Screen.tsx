@@ -10,6 +10,7 @@ interface ScreenProps {
   scroll?: boolean;
   edges?: Array<'top' | 'bottom' | 'left' | 'right'>;
   bg?: 'parchment' | 'sunrise' | 'flat';
+  bgColor?: string;   // solid override (skips gradient + blobs)
   padding?: 'default' | 'none' | 'tight' | 'hero';
   footer?: React.ReactNode;
 }
@@ -44,7 +45,7 @@ function Blobs() {
 
 export function Screen({
   children, scroll = true, edges = ['top', 'left', 'right'],
-  bg = 'parchment', padding = 'default', footer,
+  bg = 'parchment', bgColor, padding = 'default', footer,
 }: ScreenProps) {
   const pad = PADDING[padding];
 
@@ -61,10 +62,12 @@ export function Screen({
 
   return (
     <View style={{ flex: 1 }}>
-      {bg === 'flat'
+      {bgColor
+        ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: bgColor }]} />
+        : bg === 'flat'
         ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.bg }]} />
         : <LinearGradient colors={bg === 'sunrise' ? gradients.sunrise : gradients.parchment} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />}
-      {bg !== 'flat' && <Blobs />}
+      {!bgColor && bg !== 'flat' && <Blobs />}
       <SafeAreaView edges={edges} style={{ flex: 1 }}>{content}</SafeAreaView>
       {footer && (
         <View pointerEvents="box-none" style={styles.footer}>{footer}</View>
