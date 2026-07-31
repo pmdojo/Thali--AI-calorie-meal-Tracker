@@ -1,22 +1,34 @@
 import { Tabs } from 'expo-router';
 import { MotiView } from 'moti';
 import { StyleSheet, View } from 'react-native';
-import { spacing } from '@thali/ui-tokens';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, radii, shadow, spacing } from '@thali/ui-tokens';
 import { Icon, IconName } from '../../src/components/Icon';
 
-// Dark floating pill nav (reference). Active tab = white icon in a soft circle.
 function TabIcon({ icon, focused }: { icon: IconName; focused: boolean }) {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', width: 46, height: 46 }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', width: 44, height: 44 }}>
       {focused && (
         <MotiView
           from={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 18, stiffness: 260 }}
-          style={styles.activePill}
-        />
+          style={styles.pillBg}
+        >
+          <LinearGradient
+            colors={['rgba(110,168,255,0.18)', 'rgba(115,214,255,0.16)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </MotiView>
       )}
-      <Icon name={icon} size={22} color={focused ? '#FFFFFF' : 'rgba(255,255,255,0.5)'} strokeWidth={focused ? 2.3 : 1.9} />
+      <Icon
+        name={icon}
+        size={22}
+        color={focused ? colors.brand : colors.textFaint}
+        strokeWidth={focused ? 2.2 : 1.8}
+      />
     </View>
   );
 }
@@ -28,6 +40,14 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: styles.bar,
+        tabBarBackground: () => (
+          <View style={StyleSheet.absoluteFillObject}>
+            <LinearGradient
+              colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+              style={StyleSheet.absoluteFillObject}
+            />
+          </View>
+        ),
         tabBarItemStyle: { paddingTop: 10 },
       }}
     >
@@ -42,16 +62,19 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   bar: {
     position: 'absolute',
-    left: spacing.xxl, right: spacing.xxl, bottom: spacing.xl,
-    height: 64, borderRadius: 999,
-    borderTopWidth: 0, borderWidth: 0,
-    backgroundColor: '#16202E',
-    shadowColor: '#0C1522', shadowOpacity: 0.35, shadowRadius: 24,
-    shadowOffset: { width: 0, height: 14 }, elevation: 14,
+    left: spacing.lg, right: spacing.lg, bottom: spacing.lg,
+    height: 68,
+    borderRadius: radii.pill,
+    borderTopWidth: 0,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    ...shadow.floating,
+    elevation: 12,
   },
-  activePill: {
+  pillBg: {
     ...StyleSheet.absoluteFillObject,
-    margin: 5, borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 22,
+    margin: 4,
+    overflow: 'hidden',
   },
 });
