@@ -1,5 +1,6 @@
 import { MotiView } from 'moti';
 import { StyleSheet, Text, View } from 'react-native';
+import { estimateMeal, getDish } from '@thali/shared';
 import { colors, radii, spacing, type as t } from '@thali/ui-tokens';
 import { Card } from '../../src/components/Card';
 import { Icon } from '../../src/components/Icon';
@@ -8,23 +9,48 @@ import { Screen } from '../../src/components/Screen';
 import { SectionHeader } from '../../src/components/SectionHeader';
 import { Sparkline } from '../../src/components/Sparkline';
 import { StatTile } from '../../src/components/StatTile';
-import { dailyStatusForRange, streakSummary, useStore } from '../../src/store';
+import { dailyStatusForRange, streakSummary, todaysLogs, useStore, type MealLog } from '../../src/store';
 
-const STATUS_GRADIENT: Record<string, [string, string]> = {
-  none:          ['#F3EEE4', '#E5DFD3'],
-  under:         ['#C9DFF7', '#8DB6E8'],
-  ok:            ['#B7E1C7', '#2FA679'],
-  slightly_over: ['#F8E1B0', '#E5A72B'],
-  over:          ['#F4C8C6', '#DC5350'],
+// Soft tile background + strong ring per budget status.
+const STATUS_BG: Record<string, string> = {
+  none: '#F1ECE2', under: '#E9F1FB', ok: '#EAF7EF', slightly_over: '#FBF1DD', over: '#F9E4E3',
 };
-
+const STATUS_RING: Record<string, string> = {
+  none: 'transparent', under: '#8DB6E8', ok: '#2FA679', slightly_over: '#E5A72B', over: '#DC5350',
+};
 const STATUS_LABEL: Record<string, string> = {
-  none: 'Nothing logged',
-  under: 'Under target',
-  ok: 'Within budget',
-  slightly_over: 'Slightly over',
-  over: 'Over budget',
+  ok: 'Within budget', slightly_over: 'Slightly over', over: 'Over budget', none: 'Nothing logged',
 };
+
+// A representative emoji for a dish.
+const ID_EMOJI: Record<string, string> = {
+  paneer_butter: '🧀', paneer_bhurji: '🧀', palak_paneer: '🧀',
+  chicken_curry: '🍗', butter_chicken: '🍗', biryani_chicken: '🍗',
+  egg_bhurji: '🥚', samosa: '🥟', pakora: '🧆', gulab_jamun: '🍮',
+  idli: '🍥', dosa_plain: '🥞', dosa_masala: '🥞', poha: '🍚', upma: '🍚',
+  kachumber: '🥗', raita: '🥛', curd: '🥛', naan: '🫓',
+};
+const CAT_EMOJI: Record<string, string> = {
+  grain: '🫓', rice: '🍚', legume: '🥣', protein: '🍛', sabzi: '🥗',
+  snack: '🍪', sweet: '🍮', drink: '🥛', salad: '🥗',
+};
+function dishEmoji(dishId: string): string {
+  if (ID_EMOJI[dishId]) return ID_EMOJI[dishId];
+  const d = getDish(dishId);
+  return (d && CAT_EMOJI[d.category]) || '🍽️';
+}
+// The emoji for a whole day = the highest-calorie dish logged that day.
+function dayEmoji(dayLogs: MealLog[]): string | null {
+  let best: string | null = null;
+  let bestK = -1;
+  for (const m of dayLogs) {
+    for (const c of m.components) {
+      const k = estimateMeal([c]).kcal.mid;
+      if (k > bestK) { bestK = k; best = c.dishId; }
+    }
+  }
+  return best ? dishEmoji(best) : null;
+}
 
 export default function History() {
   const { budget, logs } = useStore();
@@ -32,7 +58,8 @@ export default function History() {
   const days7  = dailyStatusForRange(logs, budget, 7);
   const streak = streakSummary(logs, 7);
 
-  const avgKcal = Math.round(days7.filter((d) => d.kcal > 0).reduce((s, d) => s + d.kcal, 0) / Math.max(1, days7.filter((d) => d.kcal > 0).length));
+  const logged = days7.filter((d) => d.kcal > 0);
+  const avgKcal = Math.round(logged.reduce((s, d) => s + d.kcal, 0) / Math.max(1, logged.length));
   const daysHit = days28.filter((d) => d.status === 'ok').length;
 
   return (
@@ -42,7 +69,6 @@ export default function History() {
         <Text style={[t.h1, { color: colors.text }]}>Momentum, not perfection.</Text>
       </View>
 
-      {/* Streak headline */}
       <Card tone="glassStrong" padding="lg" elevation="cardHover">
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
@@ -56,13 +82,11 @@ export default function History() {
         </View>
       </Card>
 
-      {/* Stats */}
       <View style={styles.grid}>
         <StatTile label="Avg. daily" value={avgKcal || 0} unit="kcal" icon="chart" tint="lavender" style={styles.gridItem} />
         <StatTile label="Days on target" value={daysHit} unit="/ 28" icon="target" tint="mint" style={styles.gridItem} />
       </View>
 
-      {/* Weekly chart */}
       <SectionHeader title="Last 7 days" />
       <Card padding="lg">
         <Sparkline
@@ -74,33 +98,51 @@ export default function History() {
         />
       </Card>
 
-      {/* Heatmap */}
-      <SectionHeader title="Last 28 days" />
+      {/* Food calendar — each logged day shows what you ate */}
+      <SectionHeader title="Your food calendar" />
       <Card padding="lg" style={{ gap: spacing.md }}>
-        <View style={styles.heatmap}>
-          {days28.map((d, i) => (
-            <MotiView
-              key={d.date}
-              from={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'timing', duration: 300, delay: i * 15 }}
-              style={styles.cellWrap}
-            >
-              <View
-                style={[
-                  styles.cell,
-                  { backgroundColor: STATUS_GRADIENT[d.status][1] + (d.status === 'none' ? '55' : 'ff') },
-                ]}
-              />
-              <Text style={[t.tiny, { color: colors.textFaint }]}>{new Date(d.date).getDate()}</Text>
-            </MotiView>
+        {/* weekday header */}
+        <View style={styles.weekHeader}>
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => (
+            <Text key={i} style={styles.weekHeaderText}>{w}</Text>
           ))}
+        </View>
+
+        <View style={styles.calGrid}>
+          {days28.map((d, i) => {
+            const date = new Date(d.date);
+            const emoji = dayEmoji(todaysLogs(logs, date));
+            const isToday = i === days28.length - 1;
+            return (
+              <MotiView
+                key={d.date}
+                from={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'timing', duration: 280, delay: i * 14 }}
+                style={styles.cellWrap}
+              >
+                <View
+                  style={[
+                    styles.cell,
+                    {
+                      backgroundColor: STATUS_BG[d.status],
+                      borderWidth: emoji ? 1.5 : isToday ? 1.5 : 0,
+                      borderColor: emoji ? STATUS_RING[d.status] : isToday ? colors.brand : 'transparent',
+                    },
+                  ]}
+                >
+                  {emoji ? <Text style={styles.cellEmoji}>{emoji}</Text> : null}
+                </View>
+                <Text style={[styles.cellNum, isToday && { color: colors.brand, fontWeight: '800' }]}>{date.getDate()}</Text>
+              </MotiView>
+            );
+          })}
         </View>
 
         <View style={styles.legend}>
           {(['ok', 'slightly_over', 'over', 'none'] as const).map((k) => (
             <View key={k} style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: STATUS_GRADIENT[k][1] }]} />
+              <View style={[styles.legendDot, { backgroundColor: STATUS_RING[k] === 'transparent' ? colors.border : STATUS_RING[k] }]} />
               <Text style={[t.caption, { color: colors.textMuted }]}>{STATUS_LABEL[k]}</Text>
             </View>
           ))}
@@ -118,16 +160,16 @@ export default function History() {
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', gap: spacing.md },
   gridItem: { flex: 1 },
-  heatmap: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-start',
-  },
-  cellWrap: { alignItems: 'center', gap: 3, width: 34 },
-  cell: { width: 28, height: 28, borderRadius: radii.sm },
+  weekHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 2 },
+  weekHeaderText: { ...t.tiny, color: colors.textFaint, fontWeight: '700', width: `${100 / 7}%`, textAlign: 'center' },
+  calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  cellWrap: { width: `${100 / 7}%`, alignItems: 'center', gap: 3, marginBottom: spacing.sm },
+  cell: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  cellEmoji: { fontSize: 20 },
+  cellNum: { ...t.tiny, color: colors.textFaint },
   legend: {
     flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.divider,
+    paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.divider,
   },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 12, height: 12, borderRadius: 3 },
