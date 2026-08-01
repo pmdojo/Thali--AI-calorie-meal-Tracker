@@ -1,5 +1,5 @@
 import { WaitlistForm } from './waitlist-form';
-import { PhoneMockup } from './phone-mockup';
+import { HeroOrbit } from './hero-orbit';
 import { Reveal, RevealStagger, RevealItem } from './reveal';
 import s from './page.module.css';
 
@@ -19,40 +19,8 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <header className={s.hero}>
-        <div className={`container ${s.heroGrid}`}>
-          <Reveal className={s.heroCopy}>
-            <span className={s.eyebrow}>✨ Meet Thali AI</span>
-            <h1 className={s.headline}>
-              The nutrition coach<br />that <span className={s.grad}>speaks your food.</span>
-            </h1>
-            <p className={s.sub}>
-              Snap a photo of your thali and Thali reads the whole plate — dal, sabzi, roti, rice —
-              then tells you the one small thing to do next. Calibrated for home food, not plated Western meals.
-            </p>
-
-            <ul className={s.bullets}>
-              <li style={{ animationDelay: '0.15s' }}><span className={s.spark}>✨</span> Knows dal</li>
-              <li style={{ animationDelay: '0.3s' }}><span className={s.spark}>✨</span> Understands home food</li>
-              <li style={{ animationDelay: '0.45s' }}><span className={s.spark}>✨</span> Learns your habits</li>
-            </ul>
-
-            <div className={s.ctaRow}>
-              <a href={APP_URL} className={s.ctaPrimary}>Try the app — free</a>
-              <a href="#waitlist" className={s.ctaGhost}>Join the waitlist</a>
-            </div>
-            <p className={s.trust}>No sign-up · No card · Real AI recognition on your own photos.</p>
-          </Reveal>
-
-          <Reveal className={s.heroPhone} delay={0.15} y={40}>
-            <span className={`${s.floatEmoji} ${s.fe1}`}>🥗</span>
-            <span className={`${s.floatEmoji} ${s.fe2}`}>🫓</span>
-            <span className={`${s.floatEmoji} ${s.fe3}`}>🥣</span>
-            <PhoneMockup />
-          </Reveal>
-        </div>
-      </header>
+      {/* Hero — animated food orbit */}
+      <HeroOrbit />
 
       {/* Feature trio */}
       <section className={s.section}>
