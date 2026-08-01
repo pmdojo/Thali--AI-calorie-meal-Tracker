@@ -5,7 +5,11 @@
   background: rgba(251, 247, 240, 0.72);
   border-bottom: 1px solid var(--border);
 }
-.navInner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.navInner { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+.navLinks { display: flex; gap: 30px; }
+.navLinks a { font-size: 15px; font-weight: 600; color: var(--text-soft); transition: color 0.15s ease; }
+.navLinks a:hover { color: var(--gold-deep); }
+@media (max-width: 760px) { .navLinks { display: none; } }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--text); }
 .brandDot { font-size: 22px; }
 .navCta {

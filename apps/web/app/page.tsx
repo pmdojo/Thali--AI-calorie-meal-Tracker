@@ -15,6 +15,11 @@ export default function Landing() {
             <span className={s.brandDot}>🍛</span>
             <span>Thali</span>
           </div>
+          <div className={s.navLinks}>
+            <a href="#features">Breakfast</a>
+            <a href="#how">Lunch</a>
+            <a href="#waitlist">Dinner</a>
+          </div>
           <a href={APP_URL} className={s.navCta}>Try the app →</a>
         </div>
       </nav>
@@ -23,7 +28,7 @@ export default function Landing() {
       <HeroOrbit />
 
       {/* Feature trio */}
-      <section className={s.section}>
+      <section id="features" className={s.section}>
         <div className="container">
           <Reveal><h2 className={s.h2}>Not another calorie app</h2></Reveal>
           <RevealStagger className={s.grid3}>
@@ -44,7 +49,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section className={`${s.section} ${s.sectionAlt}`}>
+      <section id="how" className={`${s.section} ${s.sectionAlt}`}>
         <div className="container">
           <Reveal><h2 className={s.h2}>Snap. See. Decide.</h2></Reveal>
           <RevealStagger className={s.steps}>
