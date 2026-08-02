@@ -8,7 +8,7 @@ import { FAB } from '../../src/components/FAB';
 import { HabitCard } from '../../src/components/HabitCard';
 import { DonutChart } from '../../src/components/DonutChart';
 import { Icon } from '../../src/components/Icon';
-import { MealRow } from '../../src/components/MealRow';
+import { MealCards } from '../../src/components/MealCards';
 import { Pill } from '../../src/components/Pill';
 import { Screen } from '../../src/components/Screen';
 import { SectionHeader } from '../../src/components/SectionHeader';
@@ -175,35 +175,14 @@ export default function Home() {
           />
         </Card>
 
-        {/* ─── Today's meals ───────────────────────────────────────── */}
-        <SectionHeader title="Today's meals" action={meals.length ? 'Add another' : undefined} onAction={() => router.push('/(tabs)/log')} />
-        {meals.length === 0 ? (
-          <Card tone="lavender" padding="lg" style={{ alignItems: 'center', gap: spacing.sm }}>
-            <View style={styles.emptyIcon}>
-              <Icon name="utensils" size={24} color={colors.brand} />
-            </View>
-            <Text style={[t.bodyBold, { color: colors.text }]}>Nothing logged yet.</Text>
-            <Text style={[t.caption, { color: colors.textMuted, textAlign: 'center' }]}>
-              Tap the scan button below to snap your first plate — takes about 15 seconds.
-            </Text>
-          </Card>
-        ) : (
-          <View style={{ gap: spacing.sm }}>
-            {meals.map((m, i) => (
-              <MealRow
-                key={m.id}
-                index={i}
-                mealType={m.mealType}
-                items={m.components.map((c) => c.dishId)}
-                kcalLow={m.estimate.kcal.low}
-                kcalHigh={m.estimate.kcal.high}
-                confidence={m.estimate.overallConfidence}
-                time={new Date(m.loggedAt).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}
-                wasSwapped={(m as { tookAlternative?: boolean }).tookAlternative}
-              />
-            ))}
-          </View>
-        )}
+        {/* ─── Meals today ─────────────────────────────────────────── */}
+        <SectionHeader title="Meals today" action="Customize" onAction={() => router.push('/(tabs)/log')} />
+        <MealCards
+          meals={meals}
+          budgetKcal={budget?.kcal ?? 0}
+          onAdd={() => router.push('/add/camera')}
+          onOpen={() => router.push('/(tabs)/log')}
+        />
 
         {/* ─── Healthy habits ──────────────────────────────────────── */}
         <SectionHeader title="Healthy habits" action="Customize" />
