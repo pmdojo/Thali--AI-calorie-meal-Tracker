@@ -33,17 +33,25 @@ export default function Review() {
 
   return (
     <Screen bg="parchment" footer={
-      <Button
-        label="Start tracking"
-        disabled={!profile}
-        icon={<Icon name="sparkles" size={18} color="#fff" strokeWidth={2.4} />}
-        onPress={() => {
-          if (!profile) return;
-          useStore.getState().setProfile(profile);
-          useOnboardingDraft.getState().reset();
-          router.replace('/(tabs)');
-        }}
-      />
+      profile ? (
+        <Button
+          label="Start tracking"
+          icon={<Icon name="sparkles" size={18} color="#fff" strokeWidth={2.4} />}
+          onPress={() => {
+            useStore.getState().setProfile(profile);
+            useOnboardingDraft.getState().reset();
+            router.replace('/(tabs)');
+          }}
+        />
+      ) : (
+        // Draft is incomplete (e.g. a refresh cleared it before persistence) —
+        // never a dead button; send the user back to finish the missing steps.
+        <Button
+          label="Finish setup"
+          trailing={<Icon name="arrowR" size={18} color="#fff" strokeWidth={2.4} />}
+          onPress={() => router.replace('/onboarding/basics')}
+        />
+      )
     }>
       <ThaliPrompt step={6} total={6} message="Done! Here's the plan I built for you." />
 
