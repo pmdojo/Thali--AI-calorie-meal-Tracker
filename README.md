@@ -10,8 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="https://thali-ai.vercel.app"><img alt="Live demo" src="https://img.shields.io/badge/Live%20Demo-thali--ai.vercel.app-7C6BF0?style=for-the-badge&labelColor=1F1B2E"></a>
-  <a href="https://github.com/pmdojo/Thali--AI-calorie-meal-Tracker"><img alt="Source" src="https://img.shields.io/badge/Source-GitHub-1F1B2E?style=for-the-badge&logo=github&logoColor=white"></a>
+  <a href="https://thali-ai.vercel.app"><img alt="Live demo" src="https://img.shields.io/badge/Live%20Demo-thali--ai.vercel.app-DD8A46?style=for-the-badge&labelColor=3A2E1D"></a>
+  <a href="https://meet-thali.vercel.app"><img alt="Landing" src="https://img.shields.io/badge/Landing-meet--thali.vercel.app-C26E2E?style=for-the-badge&labelColor=3A2E1D"></a>
+  <a href="https://github.com/pmdojo/Thali--AI-calorie-meal-Tracker"><img alt="Source" src="https://img.shields.io/badge/Source-GitHub-3A2E1D?style=for-the-badge&logo=github&logoColor=white"></a>
 </p>
 
 <p align="center">
@@ -49,23 +50,18 @@ Thali solves #2 for a specific segment.
 
 ## Screenshots
 
-<p align="center"><em>Design system v2 — glass surfaces, layered shadows, gradient hero cards, animated ring, Moti-driven micro-interactions.</em></p>
+<p align="center"><em>Design system v4 — warm terracotta &amp; cream, Playfair Display serif headings, hand-built soft-clay 3D food illustrations, soft-rounded floating nav, Moti-driven micro-interactions.</em></p>
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="docs/screenshots/01-welcome.png" alt="Welcome"><br><sub><b>Welcome</b> — hero plate + floating condiments</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/04-dashboard.png" alt="Dashboard"><br><sub><b>Dashboard</b> — ring · AI Coach · progress · weekly chart · habits</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/09-flag-swap.png" alt="Pre-log flag"><br><sub><b>The wedge</b> — pre-log flag + one-swap sheet</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/01-welcome.png" alt="Welcome"><br><sub><b>Welcome</b> — chat-style intro with the clay-thali coach</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/04-dashboard.png" alt="Dashboard"><br><sub><b>Dashboard</b> — AI coach · hovering meal cards · rings · weekly chart</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/07-history.png" alt="Activity"><br><sub><b>Activity</b> — Day/Weekly/Monthly · macro rings · pill-bar chart · challenges</sub></td>
   </tr>
   <tr>
     <td align="center" width="33%"><img src="docs/screenshots/05-log.png" alt="Log a meal"><br><sub><b>Log a meal</b> — camera hero + manual fallback</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/06-manual.png" alt="Manual add"><br><sub><b>Manual add</b> — dish library + portion sliders</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/07-history.png" alt="History"><br><sub><b>History</b> — 7-day trend + 28-day heatmap</sub></td>
-  </tr>
-  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/03-activity.png" alt="Onboarding"><br><sub><b>Onboarding</b> — build your plate with clay-3D ingredients</sub></td>
     <td align="center" width="33%"><img src="docs/screenshots/08-profile.png" alt="Profile"><br><sub><b>Profile</b> — gradient plan card + settings</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/03-activity.png" alt="Onboarding"><br><sub><b>Onboarding</b> — stepper + option cards</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/02-basics.png" alt="Basics"><br><sub><b>Basics</b> — floating-label fields with focus glow</sub></td>
   </tr>
 </table>
 
@@ -84,7 +80,10 @@ The flag fires when a meal is projected to eat more than **40% of the remaining 
 - **Pre-log flag** — the wedge. Meal > 40% of remaining budget → Hick's-Law two-choice modal with one concrete swap.
 - **Alternative-suggestion table** — rule-based (paneer butter → paneer bhurji, dal makhani → dal tadka, aloo paratha → roti, etc.). LLM used only for phrasing, never for the decision.
 - **Ledger** — meals grouped by breakfast / lunch / dinner / snack, each with kcal range + component list + swap indicator.
-- **Weekly calendar heatmap** — 🟢 within budget · 🟡 slightly over · 🔴 over. Playful "smart streak" copy ("5 of last 7 days" — not shaming).
+- **Dashboard "Meals today"** — a full-bleed row of gradient cards, one per daily slot, with a bespoke soft-clay 3D dish illustration hovering over each card and a live kcal total.
+- **Activity screen** — Day / Weekly / Monthly toggle, two macro progress rings (protein · carbs), a pill-bar chart with marker dots and a dashed goal line (on-track terracotta / over berry), and **Challenge microrewards** that flip to a *Completed* badge as you hit them.
+- **Soft-clay 3D illustration set** — hand-built SVG food art (thali, dal, sabzi, roti, curd, paneer, egg, fish, chicken, an egg-on-toast and more) rendered from a single `ClayFood`/`Food3D` system across the app *and* ported to the web landing — no emoji, no third-party asset packs.
+- **Animated food-orbit landing** — a real thali plate at the centre with katoris orbiting a dashed ring, auto-crossfading dish copy, plus 3D-clay feature icons.
 - **Landing page** with waitlist form + Supabase-backed capture endpoint.
 
 ### Not in v1 — deliberately
@@ -104,7 +103,8 @@ No global food database. No barcode scanner. No chat coach. No micronutrients. N
 | Validation    | **Zod**                                                | Every LLM response is parsed at the boundary                        |
 | Backend       | **Supabase** (Postgres + Auth + RLS + Edge Functions)  | RLS enforces self-only data on day one; Edge Function keeps the API key server-side |
 | Landing       | **Next.js 14** (App Router)                            | Fast static hero + waitlist API route                               |
-| Design tokens | Shared `packages/ui-tokens`                            | Warm palette (cream + lavender + spice orange), 24 px system radius, layered near+far shadows, glass materials, motion springs — one source of truth for mobile and web |
+| Type          | **Playfair Display** (serif headings) + **Plus Jakarta Sans** (UI) + **Manrope** (numerics) | Editorial serif display over a clean sans body; loaded via `@expo-google-fonts` on mobile and `next/font` on web |
+| Design tokens | Shared `packages/ui-tokens`                            | Warm terracotta + cream/peach palette (`#DD8A46`), soft-rounded radii, layered near+far shadows, motion springs — one source of truth for mobile and web |
 | Deploy        | **Vercel** (mobile RN Web export)                      | Free tier, auto-deploy on `git push`                                |
 | Tests         | **Vitest**                                             | 17 tests, all deterministic; run in ~400 ms                         |
 
@@ -116,7 +116,7 @@ No global food database. No barcode scanner. No chat coach. No micronutrients. N
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                       apps/mobile  (Expo + expo-router)                 │
 │                                                                         │
-│   Onboarding ─► GoalEngine ─► Dashboard ◄─── Ledger ── Weekly heatmap   │
+│   Onboarding ─► GoalEngine ─► Dashboard ◄─── Ledger ──► Activity screen │
 │                                   │                                     │
 │                                   ▼                                     │
 │                        📸 Camera / Gallery ─► base64                    │
