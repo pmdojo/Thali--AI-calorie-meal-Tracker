@@ -112,6 +112,15 @@ export default function Home() {
           onCta={() => router.push('/(tabs)/log')}
         />
 
+        {/* ─── Meals today ─────────────────────────────────────────── */}
+        <SectionHeader title="Meals today" action="Customize" onAction={() => router.push('/(tabs)/log')} />
+        <MealCards
+          meals={meals}
+          budgetKcal={budget?.kcal ?? 0}
+          onAdd={() => router.push('/add/camera')}
+          onOpen={() => router.push('/(tabs)/log')}
+        />
+
         {/* ─── Progress cards (macros) ─────────────────────────────── */}
         <SectionHeader title="Today's progress" />
         <View style={styles.grid}>
@@ -174,15 +183,6 @@ export default function Home() {
             height={140}
           />
         </Card>
-
-        {/* ─── Meals today ─────────────────────────────────────────── */}
-        <SectionHeader title="Meals today" action="Customize" onAction={() => router.push('/(tabs)/log')} />
-        <MealCards
-          meals={meals}
-          budgetKcal={budget?.kcal ?? 0}
-          onAdd={() => router.push('/add/camera')}
-          onOpen={() => router.push('/(tabs)/log')}
-        />
 
         {/* ─── Healthy habits ──────────────────────────────────────── */}
         <SectionHeader title="Healthy habits" action="Customize" />
