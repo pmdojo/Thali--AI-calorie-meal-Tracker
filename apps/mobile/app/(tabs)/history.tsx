@@ -1,176 +1,250 @@
 import { MotiView } from 'moti';
-import { StyleSheet, Text, View } from 'react-native';
-import { estimateMeal, getDish } from '@thali/shared';
-import { colors, radii, spacing, type as t } from '@thali/ui-tokens';
+import { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, fonts, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Card } from '../../src/components/Card';
-import { Icon } from '../../src/components/Icon';
-import { Pill } from '../../src/components/Pill';
+import { Icon, IconName } from '../../src/components/Icon';
+import { PillChart, type PillBar } from '../../src/components/PillChart';
+import { ProgressRing } from '../../src/components/ProgressRing';
 import { Screen } from '../../src/components/Screen';
-import { SectionHeader } from '../../src/components/SectionHeader';
-import { Sparkline } from '../../src/components/Sparkline';
-import { StatTile } from '../../src/components/StatTile';
-import { dailyStatusForRange, streakSummary, todaysLogs, useStore, type MealLog } from '../../src/store';
+import { SegmentedToggle } from '../../src/components/SegmentedToggle';
+import {
+  dailyStatusForRange, streakSummary, todaysLogs, todaysMacros, useStore,
+} from '../../src/store';
 
-// Soft tile background + strong ring per budget status.
-const STATUS_BG: Record<string, string> = {
-  none: '#F1ECE2', under: '#E9F1FB', ok: '#EAF7EF', slightly_over: '#FBF1DD', over: '#F9E4E3',
-};
-const STATUS_RING: Record<string, string> = {
-  none: 'transparent', under: '#8DB6E8', ok: '#2FA679', slightly_over: '#E5A72B', over: '#DC5350',
-};
-const STATUS_LABEL: Record<string, string> = {
-  ok: 'Within budget', slightly_over: 'Slightly over', over: 'Over budget', none: 'Nothing logged',
-};
+// Two-tone data language — terracotta (protein / on-track) + berry (carbs / over).
+const PROTEIN = { c: '#DD8A46', deep: '#C26E2E', track: '#F7E4CE', tint: '#FBEEDD' };
+const CARBS   = { c: '#BE4B63', deep: '#9E3350', track: '#F1D6DC', tint: '#F8E7EB' };
+const INK = '#3A2E1D';
 
-// A representative emoji for a dish.
-const ID_EMOJI: Record<string, string> = {
-  paneer_butter: '🧀', paneer_bhurji: '🧀', palak_paneer: '🧀',
-  chicken_curry: '🍗', butter_chicken: '🍗', biryani_chicken: '🍗',
-  egg_bhurji: '🥚', samosa: '🥟', pakora: '🧆', gulab_jamun: '🍮',
-  idli: '🍥', dosa_plain: '🥞', dosa_masala: '🥞', poha: '🍚', upma: '🍚',
-  kachumber: '🥗', raita: '🥛', curd: '🥛', naan: '🫓',
-};
-const CAT_EMOJI: Record<string, string> = {
-  grain: '🫓', rice: '🍚', legume: '🥣', protein: '🍛', sabzi: '🥗',
-  snack: '🍪', sweet: '🍮', drink: '🥛', salad: '🥗',
-};
-function dishEmoji(dishId: string): string {
-  if (ID_EMOJI[dishId]) return ID_EMOJI[dishId];
-  const d = getDish(dishId);
-  return (d && CAT_EMOJI[d.category]) || '🍽️';
-}
-// The emoji for a whole day = the highest-calorie dish logged that day.
-function dayEmoji(dayLogs: MealLog[]): string | null {
-  let best: string | null = null;
-  let bestK = -1;
-  for (const m of dayLogs) {
-    for (const c of m.components) {
-      const k = estimateMeal([c]).kcal.mid;
-      if (k > bestK) { bestK = k; best = c.dishId; }
-    }
-  }
-  return best ? dishEmoji(best) : null;
-}
+type Range = 'Day' | 'Weekly' | 'Monthly';
+const RANGES: readonly Range[] = ['Day', 'Weekly', 'Monthly'] as const;
 
-export default function History() {
+const fmtK = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n)}`);
+const dayBack = (i: number) => { const d = new Date(); d.setDate(d.getDate() - i); return d; };
+
+export default function Activity() {
   const { budget, logs } = useStore();
-  const days28 = dailyStatusForRange(logs, budget, 28);
-  const days7  = dailyStatusForRange(logs, budget, 7);
-  const streak = streakSummary(logs, 7);
+  const [range, setRange] = useState<Range>('Weekly');
+  const goalKcal = budget?.kcal ?? 2000;
+  const proteinGoalG = budget?.macros.proteinG ?? 100;
+  const carbsGoalG = budget?.macros.carbsG ?? 200;
 
-  const logged = days7.filter((d) => d.kcal > 0);
-  const avgKcal = Math.round(logged.reduce((s, d) => s + d.kcal, 0) / Math.max(1, logged.length));
-  const daysHit = days28.filter((d) => d.status === 'ok').length;
+  const { bars, goalRatio, yTicks, proteinKcal, carbsKcal, proteinPct, carbsPct } = useMemo(() => {
+    const days = range === 'Day' ? 1 : range === 'Weekly' ? 7 : 30;
+
+    // macro totals for the ring cards
+    let pg = 0, cg = 0;
+    for (let i = 0; i < days; i++) { const m = todaysMacros(logs, dayBack(i)); pg += m.protein; cg += m.carbs; }
+    const proteinKcal = Math.round(pg * 4);
+    const carbsKcal = Math.round(cg * 4);
+    const proteinPct = pg / Math.max(1, proteinGoalG * days);
+    const carbsPct = cg / Math.max(1, carbsGoalG * days);
+
+    // bars
+    let raw: { label: string; kcal: number }[] = [];
+    if (range === 'Day') {
+      const today = todaysLogs(logs);
+      raw = (['breakfast', 'lunch', 'dinner', 'snack'] as const).map((tp) => ({
+        label: tp[0].toUpperCase(),
+        kcal: today.filter((m) => m.mealType === tp).reduce((s, m) => s + m.estimate.kcal.mid, 0),
+      }));
+    } else if (range === 'Weekly') {
+      const d7 = dailyStatusForRange(logs, budget, 7);
+      raw = d7.map((d) => ({ label: new Date(d.date).toLocaleDateString('en', { weekday: 'short' }).slice(0, 3), kcal: d.kcal }));
+    } else {
+      const d28 = dailyStatusForRange(logs, budget, 28);
+      raw = [0, 1, 2, 3].map((w) => {
+        const slice = d28.slice(w * 7, w * 7 + 7);
+        const avg = slice.reduce((s, d) => s + d.kcal, 0) / 7;
+        return { label: `W${w + 1}`, kcal: Math.round(avg) };
+      });
+    }
+
+    const maxKcal = Math.max(...raw.map((r) => r.kcal), 0);
+    const goalRef = range === 'Day' ? maxKcal || goalKcal * 0.4 : goalKcal;
+    const scale = Math.max(maxKcal, goalRef) * 1.25 || 1;
+
+    const bars: PillBar[] = raw.map((r) => {
+      const over = range !== 'Day' && r.kcal > goalKcal * 1.05;
+      return {
+        label: r.label,
+        value: r.kcal > 0 ? Math.max(0.16, r.kcal / scale) : 0.1,
+        color: over ? CARBS.c : PROTEIN.c,
+        track: over ? CARBS.track : PROTEIN.track,
+        dotColor: over ? '#FFFFFF' : INK,
+      };
+    });
+
+    const yTicks = [`${fmtK(scale)}`, `${fmtK(scale * 0.5)}`, '0'];
+    const goalRatio = range === 'Day' ? undefined : goalKcal / scale;
+    return { bars, goalRatio, yTicks, proteinKcal, carbsKcal, proteinPct, carbsPct };
+  }, [range, logs, budget, goalKcal, proteinGoalG, carbsGoalG]);
+
+  // ── microrewards ────────────────────────────────────────────────────────
+  const streak = streakSummary(logs, 7);
+  const d7 = dailyStatusForRange(logs, budget, 7);
+  const daysOnBudget = d7.filter((d) => d.status === 'ok').length;
+  const todayProtein = todaysMacros(logs).protein;
+
+  const challenges: ChallengeData[] = [
+    {
+      icon: 'award', tint: PROTEIN, title: 'One step closer',
+      done: streak.logged >= 5, progress: `${streak.logged}/5 days`, reward: `${streak.logged * 90} kcal`,
+    },
+    {
+      icon: 'activity', tint: CARBS, title: 'Protein floor',
+      done: todayProtein >= proteinGoalG, progress: `${Math.round(todayProtein)}/${proteinGoalG} g`, reward: 'Badge',
+    },
+    {
+      icon: 'target', tint: PROTEIN, title: 'On-budget week',
+      done: daysOnBudget >= 3, progress: `${daysOnBudget}/3 days`, reward: `${daysOnBudget * 50} kcal`,
+    },
+  ];
 
   return (
     <Screen bg="parchment">
-      <View style={{ gap: 4 }}>
-        <Text style={[t.captionBold, { color: colors.textMuted }]}>Your rhythm</Text>
-        <Text style={[t.h1, { color: colors.text }]}>Momentum, not perfection.</Text>
+      {/* header */}
+      <View style={styles.header}>
+        <View style={styles.hBtn}><Icon name="chart" size={20} color={colors.text} /></View>
+        <Text style={[t.h1, { color: colors.text }]}>Activity</Text>
+        <View style={styles.hBtn}><Icon name="filter" size={18} color={colors.text} /></View>
       </View>
 
-      <Card tone="glassStrong" padding="lg" elevation="cardHover">
+      <SegmentedToggle options={RANGES} value={range} onChange={setRange} />
+
+      {/* macro ring cards */}
+      <View style={styles.ringRow}>
+        <RingStat label="Protein" icon="activity" kcal={proteinKcal} pct={proteinPct} palette={PROTEIN} />
+        <RingStat label="Carbs" icon="zap" kcal={carbsKcal} pct={carbsPct} palette={CARBS} />
+      </View>
+
+      {/* pill chart */}
+      <Card padding="lg" elevation="cardHover" radius="xxl" style={{ gap: spacing.lg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1 }}>
-            <Text style={[t.caption, { color: colors.textMuted }]}>This week</Text>
-            <Text style={[t.display, { color: colors.text }]}>{streak.logged}<Text style={[t.h2, { color: colors.textMuted }]}> / {streak.total}</Text></Text>
-            <Text style={[t.body, { color: colors.textMuted }]}>days logged</Text>
-          </View>
-          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="flame" size={28} color={colors.accent} strokeWidth={2.2} />
+          <Text style={[t.h2, { color: colors.text }]}>Overall progress</Text>
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            <Legend color={PROTEIN.c} label="On track" />
+            <Legend color={CARBS.c} label="Over" />
           </View>
         </View>
+        <PillChart bars={bars} height={200} yTicks={yTicks} goalRatio={goalRatio} />
       </Card>
 
-      <View style={styles.grid}>
-        <StatTile label="Avg. daily" value={avgKcal || 0} unit="kcal" icon="chart" tint="lavender" style={styles.gridItem} />
-        <StatTile label="Days on target" value={daysHit} unit="/ 28" icon="target" tint="mint" style={styles.gridItem} />
+      {/* challenges */}
+      <View style={styles.sectionHead}>
+        <Text style={[t.h2, { color: colors.text }]}>Challenge</Text>
+        <Pressable><Text style={[t.bodyBold, { color: colors.brand }]}>View all</Text></Pressable>
+      </View>
+      <View style={{ gap: spacing.sm }}>
+        {challenges.map((c, i) => <ChallengeCard key={c.title} data={c} index={i} />)}
       </View>
 
-      <SectionHeader title="Last 7 days" />
-      <Card padding="lg">
-        <Sparkline
-          data={days7.map((d) => d.kcal || (budget?.kcal ?? 0) * 0.15)}
-          goal={budget?.kcal ?? 2000}
-          labels={days7.map((d) => new Date(d.date).toLocaleDateString('en', { weekday: 'narrow' }))}
-          width={310}
-          height={140}
-        />
-      </Card>
-
-      {/* Food calendar — each logged day shows what you ate */}
-      <SectionHeader title="Your food calendar" />
-      <Card padding="lg" style={{ gap: spacing.md }}>
-        {/* weekday header */}
-        <View style={styles.weekHeader}>
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => (
-            <Text key={i} style={styles.weekHeaderText}>{w}</Text>
-          ))}
-        </View>
-
-        <View style={styles.calGrid}>
-          {days28.map((d, i) => {
-            const date = new Date(d.date);
-            const emoji = dayEmoji(todaysLogs(logs, date));
-            const isToday = i === days28.length - 1;
-            return (
-              <MotiView
-                key={d.date}
-                from={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'timing', duration: 280, delay: i * 14 }}
-                style={styles.cellWrap}
-              >
-                <View
-                  style={[
-                    styles.cell,
-                    {
-                      backgroundColor: STATUS_BG[d.status],
-                      borderWidth: emoji ? 1.5 : isToday ? 1.5 : 0,
-                      borderColor: emoji ? STATUS_RING[d.status] : isToday ? colors.brand : 'transparent',
-                    },
-                  ]}
-                >
-                  {emoji ? <Text style={styles.cellEmoji}>{emoji}</Text> : null}
-                </View>
-                <Text style={[styles.cellNum, isToday && { color: colors.brand, fontWeight: '800' }]}>{date.getDate()}</Text>
-              </MotiView>
-            );
-          })}
-        </View>
-
-        <View style={styles.legend}>
-          {(['ok', 'slightly_over', 'over', 'none'] as const).map((k) => (
-            <View key={k} style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: STATUS_RING[k] === 'transparent' ? colors.border : STATUS_RING[k] }]} />
-              <Text style={[t.caption, { color: colors.textMuted }]}>{STATUS_LABEL[k]}</Text>
-            </View>
-          ))}
-        </View>
-      </Card>
-
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <Pill label="Weekly view" icon="filter" tone="brand" />
-        <Pill label="Export CSV" icon="chart" tone="neutral" />
-      </View>
+      <View style={{ height: spacing.xl }} />
     </Screen>
   );
 }
 
+// ── ring stat card ──────────────────────────────────────────────────────────
+function RingStat({
+  label, icon, kcal, pct, palette,
+}: { label: string; icon: IconName; kcal: number; pct: number; palette: typeof PROTEIN }) {
+  return (
+    <View style={[styles.ringCard, shadow.card]}>
+      <View style={styles.ringTop}>
+        <View style={[styles.ringIcon, { backgroundColor: palette.tint }]}>
+          <Icon name={icon} size={16} color={palette.deep} strokeWidth={2.2} />
+        </View>
+        <Text style={[t.bodyBold, { color: colors.text }]}>{label}</Text>
+        <View style={{ flex: 1 }} />
+        <Icon name="trending" size={16} color={colors.textFaint} />
+      </View>
+      <View style={styles.ringBottom}>
+        <View>
+          <Text style={styles.ringKcal}>{kcal}<Text style={styles.ringUnit}> Kcal</Text></Text>
+          <Text style={[t.caption, { color: colors.textMuted }]}>Eaten</Text>
+        </View>
+        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <ProgressRing progress={pct} size={58} thickness={8} color={palette.c} track={palette.track} />
+          <Text style={styles.ringPct}>{Math.round(Math.min(1, pct) * 100)}%</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Legend({ color, label }: { color: string; label: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+      <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: color }} />
+      <Text style={[t.caption, { color: colors.textMuted }]}>{label}</Text>
+    </View>
+  );
+}
+
+// ── challenge card ──────────────────────────────────────────────────────────
+interface ChallengeData {
+  icon: IconName; tint: typeof PROTEIN; title: string;
+  done: boolean; progress: string; reward: string;
+}
+function ChallengeCard({ data, index }: { data: ChallengeData; index: number }) {
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: 10 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 360, delay: index * 80 }}
+    >
+      <Card padding="md" elevation="card" style={styles.chalCard}>
+        <View style={[styles.chalIcon, { backgroundColor: data.tint.tint }]}>
+          <Icon name={data.icon} size={22} color={data.tint.deep} strokeWidth={2.2} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[t.bodyBold, { color: colors.text }]}>{data.title}</Text>
+          {data.done
+            ? <Text style={[t.captionBold, { color: colors.success }]}>Completed</Text>
+            : <Text style={[t.caption, { color: colors.textMuted }]}>{data.progress}</Text>}
+        </View>
+        <View style={{ alignItems: 'flex-end', gap: 3 }}>
+          {data.done
+            ? <View style={styles.rewardBadge}><Icon name="check" size={13} color="#fff" strokeWidth={3} /></View>
+            : <Icon name="flame" size={20} color={data.tint.c} strokeWidth={2} />}
+          <Text style={styles.rewardText}>{data.reward}</Text>
+        </View>
+      </Card>
+    </MotiView>
+  );
+}
+
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', gap: spacing.md },
-  gridItem: { flex: 1 },
-  weekHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 2 },
-  weekHeaderText: { ...t.tiny, color: colors.textFaint, fontWeight: '700', width: `${100 / 7}%`, textAlign: 'center' },
-  calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  cellWrap: { width: `${100 / 7}%`, alignItems: 'center', gap: 3, marginBottom: spacing.sm },
-  cell: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  cellEmoji: { fontSize: 20 },
-  cellNum: { ...t.tiny, color: colors.textFaint },
-  legend: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md,
-    paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.divider,
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: spacing.xs,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 12, height: 12, borderRadius: 3 },
+  hBtn: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border,
+    ...shadow.card,
+  },
+  ringRow: { flexDirection: 'row', gap: spacing.md },
+  ringCard: {
+    flex: 1, backgroundColor: colors.surface, borderRadius: radii.xl,
+    padding: spacing.lg, gap: spacing.lg, borderWidth: 1, borderColor: colors.border,
+  },
+  ringTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  ringIcon: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  ringBottom: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  ringKcal: { fontFamily: fonts.numX, fontSize: 26, color: colors.text, letterSpacing: -0.5 },
+  ringUnit: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textMuted },
+  ringPct: { position: 'absolute', fontFamily: fonts.bold, fontSize: 12, color: colors.text },
+  sectionHead: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
+  chalCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  chalIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  rewardBadge: {
+    width: 22, height: 22, borderRadius: 11, backgroundColor: colors.success,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  rewardText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textMuted },
 });
