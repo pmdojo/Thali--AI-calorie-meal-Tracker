@@ -20,14 +20,16 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
+  /* minmax(0,…) lets the columns shrink below their content's min-size, so the
+     fixed-width orbit stage can't blow the layout past the viewport on mobile */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   gap: 32px;
   align-items: center;
   min-height: 620px;
 }
 
 /* ── Left copy ── */
-.copy { max-width: 460px; }
+.copy { max-width: 460px; min-width: 0; }
 .eyebrow {
   display: inline-block;
   font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
@@ -38,9 +40,10 @@
 .kcalUnit { font-size: 17px; font-weight: 700; color: var(--gold); }
 .title {
   font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
-  font-size: clamp(40px, 5.4vw, 64px);
+  font-size: clamp(32px, 7vw, 64px);
   line-height: 1.02; font-weight: 800; letter-spacing: -0.5px;
   margin: 6px 0 14px; color: var(--text);
+  overflow-wrap: break-word;
 }
 .detectWrap { min-height: 30px; margin-bottom: 18px; }
 .detect {
@@ -76,8 +79,8 @@
 .trust { font-size: 14px; color: var(--text-faint); margin-top: 20px; max-width: 420px; }
 
 /* ── Orbit stage ── */
-.stageWrap { display: flex; justify-content: center; align-items: center; }
-.stage { position: relative; width: 560px; height: 560px; }
+.stageWrap { display: flex; justify-content: center; align-items: center; min-width: 0; max-width: 100%; overflow: hidden; }
+.stage { position: relative; width: 560px; height: 560px; flex-shrink: 0; }
 
 .arc {
   position: absolute; inset: 60px;
@@ -131,10 +134,16 @@
 
 /* Responsive */
 @media (max-width: 960px) {
+  .hero { padding: 24px 0 40px; }
   .hero::before { top: -8%; right: -30%; width: 120%; height: 70%; }
-  .grid { grid-template-columns: 1fr; gap: 8px; text-align: center; min-height: 0; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 8px; text-align: center; min-height: 0; }
   .copy { max-width: 100%; margin: 0 auto; }
   .ctaRow { justify-content: center; }
-  .desc { min-height: 0; }
+  .desc { min-height: 0; margin-left: auto; margin-right: auto; }
   .stage { transform: scale(0.62); margin: -70px auto -60px; }
+}
+/* very small screens — keep the orbit from feeling cramped */
+@media (max-width: 400px) {
+  .stage { transform: scale(0.52); margin: -96px auto -84px; }
+  .cta, .ghost { font-size: 15px; }
 }
