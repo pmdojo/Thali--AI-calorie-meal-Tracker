@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, gradients, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
+import { ClayFood } from './ClayFood';
 
 // Thali's face — a gradient disc with a friendly bowl mascot that gently bobs.
 export function ThaliMascot({ size = 56 }: { size?: number }) {
@@ -17,7 +18,9 @@ export function ThaliMascot({ size = 56 }: { size?: number }) {
       ]}
     >
       <LinearGradient colors={gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
-      <Text style={{ fontSize: size * 0.5 }}>🍛</Text>
+      <View style={{ zIndex: 1 }}>
+        <ClayFood id="thali" size={size * 0.72} />
+      </View>
     </MotiView>
   );
 }

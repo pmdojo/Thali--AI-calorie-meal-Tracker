@@ -4,10 +4,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Icon } from './Icon';
 
-// Multi-select emoji chip — for "what's on your plate" and "conditions".
+// Multi-select chip — for "what's on your plate" and "conditions". Pass an
+// `icon` (e.g. a ClayFood illustration) to override the emoji glyph.
 export function EmojiChip({
-  emoji, label, selected, onPress,
-}: { emoji?: string; label: string; selected: boolean; onPress: () => void }) {
+  emoji, icon, label, selected, onPress,
+}: { emoji?: string; icon?: React.ReactNode; label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress}>
       <MotiView
@@ -19,7 +20,7 @@ export function EmojiChip({
           selected ? shadow.brandGlow : shadow.card,
         ]}
       >
-        {emoji ? <Text style={{ fontSize: 18 }}>{emoji}</Text> : null}
+        {icon ? icon : emoji ? <Text style={{ fontSize: 18 }}>{emoji}</Text> : null}
         <Text style={[t.bodyBold, { color: selected ? '#fff' : colors.text }]}>{label}</Text>
         {selected && (
           <View style={styles.check}>
