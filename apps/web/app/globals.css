@@ -1,22 +1,23 @@
 :root {
-  --bg: #F3EDE3;          /* cream */
-  --bg-alt: #EAE1D3;
-  --surface: #FBF7F0;
-  --taupe: #CFC1AC;       /* the big arc */
-  --taupe-deep: #B9A88E;
-  --border: rgba(42, 36, 29, 0.10);
-  --text: #2A241D;
-  --text-soft: #4A4238;
-  --text-muted: #857B6C;
-  --text-faint: #A79C8A;
-  --gold: #C69A4B;
-  --gold-deep: #A97F32;
-  --gold-soft: #E6C98A;
-  --brand: #C69A4B;
-  --brand-deep: #A97F32;
-  --brand-tint: #F1E6CF;
-  --accent: #C69A4B;
-  --ink: #2A241D;
+  --bg: #F5E7D0;
+  --bg-alt: #EFDCC0;
+  --surface: #FCF4E9;         /* warm cream card */
+  --surface-2: #FBEFDF;
+  --taupe: #E9CFA6;
+  --border: rgba(58, 46, 29, 0.10);
+  --text: #3A2E1D;            /* dark cocoa */
+  --text-soft: #5A4A34;
+  --text-muted: #8A7B66;
+  --text-faint: #B3A488;
+  --brand: #DD8A46;          /* terracotta orange */
+  --brand-deep: #C26E2E;
+  --brand-soft: #F2C79A;
+  --brand-tint: #FBE6CE;
+  --gold: #DD8A46;
+  --gold-deep: #C26E2E;
+  --gold-soft: #F2C79A;
+  --accent: #DD8A46;
+  --ink: #3A2E1D;
   --success: #6E8B4E;
 }
 
@@ -24,16 +25,20 @@
 html, body { margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.55;
   overflow-x: hidden;
+  background: linear-gradient(168deg, #F8ECD6 0%, #F3DCBE 46%, #EBC99C 100%);
+  background-attachment: fixed;
 }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 .container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+/* elegant serif for display headings (loaded via next/font → --font-serif) */
+.serif { font-family: var(--font-serif), 'Playfair Display', Georgia, 'Times New Roman', serif; }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }

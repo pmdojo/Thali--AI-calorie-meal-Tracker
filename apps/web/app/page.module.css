@@ -14,7 +14,7 @@
 .brandDot { font-size: 22px; }
 .navCta {
   font-weight: 700; font-size: 14px; color: #fff;
-  background: linear-gradient(120deg, #C69A4B, #A97F32);
+  background: linear-gradient(120deg, #E39A57, #C26E2E);
   padding: 9px 16px; border-radius: 999px;
   box-shadow: 0 8px 18px -6px rgba(169,127,50,0.5);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -45,7 +45,7 @@
   margin: 0 0 20px; color: var(--text);
 }
 .grad {
-  background: linear-gradient(120deg, #C69A4B 10%, #A97F32 95%);
+  background: linear-gradient(120deg, #E39A57 10%, #C26E2E 95%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .sub { font-size: clamp(16px, 1.6vw, 19px); color: var(--text-muted); max-width: 540px; margin: 0 0 28px; }
@@ -64,7 +64,7 @@
 .ctaRow { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .ctaPrimary {
   font-weight: 700; font-size: 16px; color: #fff;
-  background: linear-gradient(120deg, #C69A4B, #A97F32);
+  background: linear-gradient(120deg, #E39A57, #C26E2E);
   padding: 15px 28px; border-radius: 999px;
   box-shadow: 0 14px 30px -8px rgba(169,127,50,0.55);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -93,41 +93,45 @@
 /* ── Sections ────────────────────────────────────────────────────── */
 .section { padding: 80px 0; }
 .sectionAlt { background: var(--bg-alt); }
-.h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 800; letter-spacing: -0.8px; margin: 0 0 36px; color: var(--text); }
+.h2 {
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: clamp(28px, 3.8vw, 44px); font-weight: 800; letter-spacing: -0.4px;
+  margin: 0 0 36px; color: var(--text);
+}
 
 .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
 .card {
-  background: #fff; border: 1px solid var(--border);
+  background: var(--surface); border: 1px solid var(--border);
   border-radius: 24px; padding: 28px;
-  box-shadow: 0 10px 26px rgba(27,24,48,0.05);
+  box-shadow: 0 12px 30px -12px rgba(120,80,30,0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(27,24,48,0.09); }
+.card:hover { transform: translateY(-4px); box-shadow: 0 22px 44px -14px rgba(120,80,30,0.28); }
 .cardEmoji {
   width: 52px; height: 52px; border-radius: 16px; margin-bottom: 16px;
   display: flex; align-items: center; justify-content: center; font-size: 26px;
-  background: linear-gradient(135deg, #f5f1fb, #fdece0);
+  background: linear-gradient(135deg, #FBE6CE, #F2C79A);
 }
-.cardTitle { font-size: 20px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
+.cardTitle { font-family: var(--font-serif), Georgia, serif; font-size: 22px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 .cardBody { font-size: 15px; color: var(--text-muted); margin: 0; }
 
 .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-.step { display: flex; gap: 16px; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+.step { display: flex; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
 .stepNum {
   flex-shrink: 0; width: 40px; height: 40px; border-radius: 999px;
-  background: linear-gradient(120deg, #C69A4B, #A97F32); color: #fff;
+  background: linear-gradient(120deg, #E39A57, #C26E2E); color: #fff;
   display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;
 }
-.stepTitle { font-size: 18px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+.stepTitle { font-family: var(--font-serif), Georgia, serif; font-size: 19px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
 .stepBody { font-size: 14px; color: var(--text-muted); margin: 0; }
 
 /* Waitlist */
 .waitCard {
-  background: linear-gradient(135deg, #2A241D 0%, #6B573A 65%, #A97F32 130%);
+  background: linear-gradient(135deg, #3A2E1D 0%, #8A5E38 60%, #DD8A46 130%);
   border-radius: 32px; padding: 48px 40px; text-align: center;
   box-shadow: 0 30px 60px -20px rgba(169,127,50,0.5);
 }
-.waitTitle { font-size: clamp(24px, 3vw, 34px); font-weight: 800; color: #fff; margin: 0 0 10px; }
+.waitTitle { font-family: var(--font-serif), Georgia, serif; font-size: clamp(26px, 3.2vw, 38px); font-weight: 800; color: #fff; margin: 0 0 10px; }
 .waitSub { font-size: 16px; color: rgba(255,255,255,0.8); margin: 0 auto 24px; max-width: 460px; }
 
 /* Footer */

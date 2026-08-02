@@ -12,7 +12,7 @@
   width: 78%;
   height: 150%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 40%, #D8CBB6 0%, #C9BBA7 55%, #BCAB92 100%);
+  background: radial-gradient(circle at 35% 40%, #F5E1C2 0%, #EFD1AA 55%, #E7BE8C 100%);
   z-index: 0;
 }
 
@@ -37,8 +37,9 @@
 .kcal { font-size: 34px; font-weight: 800; color: var(--gold-deep); letter-spacing: -1px; }
 .kcalUnit { font-size: 17px; font-weight: 700; color: var(--gold); }
 .title {
-  font-size: clamp(38px, 5vw, 58px);
-  line-height: 1.04; font-weight: 800; letter-spacing: -1.4px;
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: clamp(40px, 5.4vw, 64px);
+  line-height: 1.02; font-weight: 800; letter-spacing: -0.5px;
   margin: 6px 0 14px; color: var(--text);
 }
 .detectWrap { min-height: 30px; margin-bottom: 18px; }
@@ -55,7 +56,7 @@
 .cta {
   display: inline-flex; align-items: center; gap: 12px;
   font-weight: 700; font-size: 16px; color: #fff;
-  background: linear-gradient(120deg, #C69A4B, #A97F32);
+  background: linear-gradient(120deg, #E39A57, #C26E2E);
   padding: 8px 8px 8px 24px; border-radius: 999px;
   box-shadow: 0 16px 34px -10px rgba(169,127,50,0.55);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
