@@ -29,18 +29,18 @@ export function DonutChart({
         <Svg width={size} height={size + 14}>
           <Defs>
             <SvgLG id="donutFill" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0%" stopColor={over ? '#FF9E8F' : '#8FC0FF'} />
-              <Stop offset="55%" stopColor={over ? '#FF7A5F' : '#6EA8FF'} />
-              <Stop offset="100%" stopColor={over ? '#FF5A5F' : '#5A8AF0'} />
+              <Stop offset="0%" stopColor={over ? '#D98A5A' : '#E6C98A'} />
+              <Stop offset="55%" stopColor={over ? '#C1553B' : '#C69A4B'} />
+              <Stop offset="100%" stopColor={over ? '#A83B28' : '#A97F32'} />
             </SvgLG>
           </Defs>
 
           {/* extruded depth */}
-          <Circle cx={cx} cy={cy + 12} r={r} stroke="#2B4A78" strokeWidth={stroke} fill="none" opacity={0.32} />
-          <Circle cx={cx} cy={cy + 6} r={r} stroke="#3E64A0" strokeWidth={stroke} fill="none" opacity={0.5} />
+          <Circle cx={cx} cy={cy + 12} r={r} stroke="#6B573A" strokeWidth={stroke} fill="none" opacity={0.32} />
+          <Circle cx={cx} cy={cy + 6} r={r} stroke="#8A6E3A" strokeWidth={stroke} fill="none" opacity={0.5} />
 
           {/* left (remaining) track */}
-          <Circle cx={cx} cy={cy} r={r} stroke="#DCEAFB" strokeWidth={stroke} fill="none" />
+          <Circle cx={cx} cy={cy} r={r} stroke="#EDE3CE" strokeWidth={stroke} fill="none" />
 
           {/* consumed arc */}
           <Circle

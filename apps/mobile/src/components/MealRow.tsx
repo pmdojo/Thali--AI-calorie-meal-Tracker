@@ -17,10 +17,10 @@ interface Props {
 }
 
 const META: Record<Props['mealType'], { label: string; grad: string }> = {
-  breakfast: { label: 'Breakfast', grad: '#E4F6FF' },
-  lunch:     { label: 'Lunch',     grad: '#E7F0FF' },
-  dinner:    { label: 'Dinner',    grad: '#EDEBFF' },
-  snack:     { label: 'Snack',     grad: '#EAF1FF' },
+  breakfast: { label: 'Breakfast', grad: '#F6E7D6' },
+  lunch:     { label: 'Lunch',     grad: '#F5ECDB' },
+  dinner:    { label: 'Dinner',    grad: '#F3E1D2' },
+  snack:     { label: 'Snack',     grad: '#ECEEDC' },
 };
 
 export function MealRow({ mealType, items, kcalLow, kcalHigh, confidence, time, wasSwapped, index = 0 }: Props) {

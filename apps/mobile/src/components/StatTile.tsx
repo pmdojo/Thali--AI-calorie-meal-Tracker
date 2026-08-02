@@ -17,11 +17,11 @@ interface Props {
 }
 
 const TINT: Record<NonNullable<Props['tint']>, { grad: [string, string]; ring: string; fg: string; }> = {
-  lavender: { grad: ['#EFF3FF', '#E4E9FF'], ring: '#C7CFFF', fg: '#5B6BE0' },  // protein (blue-lavender)
-  peach:    { grad: ['#EDECFF', '#E0DCFF'], ring: '#C9BFFF', fg: '#7A6BF0' },  // fat (lavender)
-  mint:     { grad: ['#E6F7F1', '#D2F0E4'], ring: '#B7E6D3', fg: '#1E9E72' },
-  sky:      { grad: ['#E4F6FF', '#CFEBFC'], ring: '#AFE0F7', fg: '#2E8CC0' },  // water/carbs (cyan)
-  gold:     { grad: ['#E4F1FF', '#CFE3FB'], ring: '#B4D6F7', fg: '#3B7FCB' },  // carbs (blue)
+  lavender: { grad: ['#F5ECDB', '#EFE0C4'], ring: '#E6C98A', fg: '#A97F32' },  // protein (gold)
+  peach:    { grad: ['#F6E7D6', '#F0D8C0'], ring: '#E0B896', fg: '#B5714B' },  // fat (clay)
+  mint:     { grad: ['#ECEEDC', '#DEE3C4'], ring: '#C7D2A0', fg: '#6E8B4E' },  // olive
+  sky:      { grad: ['#E9EEE7', '#D8E2D4'], ring: '#B7CBB2', fg: '#5E7B6A' },  // water (sage)
+  gold:     { grad: ['#F3E9D0', '#EADCB8'], ring: '#D8C48A', fg: '#8A6E2A' },  // carbs (bronze)
 };
 
 export function StatTile({

@@ -18,88 +18,88 @@ export const fonts = {
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 export const colors = {
-  // surfaces
-  bg:          '#EAF6FC',        // sky
-  bgAlt:       '#E1F0FB',
+  // surfaces — warm cream / taupe (matches the landing)
+  bg:          '#F3EDE3',        // cream
+  bgAlt:       '#EAE1D3',
   surface:     '#FFFFFF',
-  surfaceAlt:  '#EAF1FF',        // pale periwinkle card
-  surfaceWarm: '#E4F6FF',        // pale cyan (legacy name kept)
-  surfaceMint: '#E6F7F1',        // pale aqua-mint
-  surfaceSky:  '#E9F1FB',
-  border:      'rgba(29,29,31,0.06)',
-  borderStrong:'rgba(29,29,31,0.12)',
-  divider:     'rgba(29,29,31,0.05)',
+  surfaceAlt:  '#F5ECDB',        // pale gold card
+  surfaceWarm: '#F6E7D6',        // pale clay
+  surfaceMint: '#ECEEDC',        // pale olive
+  surfaceSky:  '#F0E7D6',        // pale sand
+  border:      'rgba(42,36,29,0.08)',
+  borderStrong:'rgba(42,36,29,0.14)',
+  divider:     'rgba(42,36,29,0.06)',
 
   // glass (per spec)
-  glass:       'rgba(255,255,255,0.65)',
-  glassStrong: 'rgba(255,255,255,0.78)',
-  glassBorder: 'rgba(255,255,255,0.55)',
-  scrim:       'rgba(20,40,70,0.38)',
+  glass:       'rgba(255,255,255,0.62)',
+  glassStrong: 'rgba(255,252,246,0.80)',
+  glassBorder: 'rgba(255,255,255,0.60)',
+  scrim:       'rgba(42,36,29,0.42)',
 
   // text
-  text:        '#1D1D1F',
-  textSoft:    '#3A3F4A',
-  textMuted:   '#6F7482',
-  textFaint:   '#A2A8B4',
-  onDark:      '#FFFFFF',
+  text:        '#2A241D',
+  textSoft:    '#4A4238',
+  textMuted:   '#857B6C',
+  textFaint:   '#A79C8A',
+  onDark:      '#FBF7F0',
 
-  // brand — blue → lavender → cyan
-  brand:       '#6EA8FF',        // primary
-  brandDeep:   '#4C8AF0',
-  brandSoft:   '#B9D3FF',
-  brandTint:   '#E7F0FF',
+  // brand — gold
+  brand:       '#C69A4B',        // primary gold
+  brandDeep:   '#A97F32',
+  brandSoft:   '#E6C98A',
+  brandTint:   '#F1E6CF',
 
-  secondary:   '#A69CFF',        // lavender
-  secondaryDeep:'#8A7DF0',
-  secondaryTint:'#EDEBFF',
+  secondary:   '#B5714B',        // terracotta clay
+  secondaryDeep:'#96592F',
+  secondaryTint:'#F3E1D2',
 
-  accent:      '#73D6FF',        // cyan
-  accentDeep:  '#3FB6E8',
-  accentSoft:  '#C4EEFF',
-  accentTint:  '#E4F6FF',
+  accent:      '#D9A24B',        // amber
+  accentDeep:  '#B37E29',
+  accentSoft:  '#F2D8A5',
+  accentTint:  '#F7EAD2',
 
-  ink:         '#141A24',        // near-black for pill CTAs (kawaii ref)
+  ink:         '#2A241D',        // near-black warm for pill CTAs
 
-  gold:        '#7AB8FF',        // legacy alias → blue
-  goldSoft:    '#CFE4FF',
+  gold:        '#C69A4B',
+  goldSoft:    '#E6C98A',
 
-  // semantics (iOS-ish)
-  success:     '#34C77E',
-  successSoft: '#CFF3E1',
-  warning:     '#FFB020',
-  warningSoft: '#FFE7BC',
-  danger:      '#FF5A5F',
-  dangerSoft:  '#FFD6D8',
-  info:        '#6EA8FF',
-  infoSoft:    '#D6E6FF',
+  // semantics (warm-harmonised)
+  success:     '#6E8B4E',        // olive
+  successSoft: '#DCE6C6',
+  warning:     '#D9A24B',
+  warningSoft: '#F2D8A5',
+  danger:      '#C1553B',        // terracotta red
+  dangerSoft:  '#F0CFC4',
+  info:        '#C69A4B',
+  infoSoft:    '#F1E6CF',
 
-  // macro chips
-  protein:     '#6EA8FF',
-  carbs:       '#A69CFF',
-  fat:         '#73D6FF',
-  water:       '#3FB6E8',
-  fiber:       '#34C77E',
+  // macro chips — earthy hues
+  protein:     '#C69A4B',        // gold
+  carbs:       '#B5714B',        // clay
+  fat:         '#A88A3A',        // bronze
+  water:       '#6E8B7A',        // sage
+  fiber:       '#7E8B4E',        // olive
 } as const;
 
 export type ColorToken = keyof typeof colors;
 
 // Gradients
 export const gradients = {
-  brand:      ['#6EA8FF', '#A69CFF'] as [string, string],
-  brandCalm:  ['#6EA8FF', '#73D6FF'] as [string, string],
-  peach:      ['#73D6FF', '#6EA8FF'] as [string, string],  // legacy name → cyan-blue
-  sunrise:    ['#EAF6FC', '#F4FBFF'] as [string, string],   // hero bg
-  parchment:  ['#EAF6FC', '#E1F0FB'] as [string, string],   // screen bg
-  mint:       ['#7CE0C0', '#34C77E'] as [string, string],
-  sky:        ['#8FC7FF', '#6EA8FF'] as [string, string],
-  gold:       ['#A9D4FF', '#6EA8FF'] as [string, string],
-  ink:        ['#232B38', '#141A24'] as [string, string],   // dark pill CTA
+  brand:      ['#D9B45C', '#A97F32'] as [string, string],
+  brandCalm:  ['#E6C98A', '#C69A4B'] as [string, string],
+  peach:      ['#E0A35A', '#C97B4B'] as [string, string],  // warm clay
+  sunrise:    ['#F6EFE2', '#F3EDE3'] as [string, string],   // hero bg
+  parchment:  ['#F3EDE3', '#EAE1D3'] as [string, string],   // screen bg
+  mint:       ['#9BB06E', '#6E8B4E'] as [string, string],
+  sky:        ['#D8C3A0', '#C0A97F'] as [string, string],
+  gold:       ['#E6C98A', '#C69A4B'] as [string, string],
+  ink:        ['#3A2E1D', '#2A241D'] as [string, string],   // dark pill CTA
   glassSheen: ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.5)'] as [string, string],
-  // playful sticker tags
-  tagYellow:  ['#FFE39A', '#FFD166'] as [string, string],
-  tagPink:    ['#FFC7DE', '#FF9EC4'] as [string, string],
-  tagPurple:  ['#C9BFFF', '#A69CFF'] as [string, string],
-  tagBlue:    ['#AFD6FF', '#73D6FF'] as [string, string],
+  // warm sticker tags (legacy names kept)
+  tagYellow:  ['#F2D89A', '#E6C066'] as [string, string],
+  tagPink:    ['#F0C7A8', '#E0A37B'] as [string, string],
+  tagPurple:  ['#D8C6A0', '#C0A97F'] as [string, string],
+  tagBlue:    ['#E6C98A', '#C69A4B'] as [string, string],
 } as const;
 
 // ─── Spacing ────────────────────────────────────────────────────────────────
@@ -135,23 +135,23 @@ export const type = {
 export const shadow = {
   none: { shadowColor: '#000', shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
   card: {
-    shadowColor: '#1B3A63', shadowOpacity: 0.08, shadowRadius: 30,
+    shadowColor: '#3C3020', shadowOpacity: 0.10, shadowRadius: 30,
     shadowOffset: { width: 0, height: 18 }, elevation: 3,
   },
   cardHover: {
-    shadowColor: '#1B3A63', shadowOpacity: 0.12, shadowRadius: 40,
+    shadowColor: '#3C3020', shadowOpacity: 0.14, shadowRadius: 40,
     shadowOffset: { width: 0, height: 26 }, elevation: 6,
   },
   floating: {
-    shadowColor: '#12294a', shadowOpacity: 0.16, shadowRadius: 44,
+    shadowColor: '#2A2114', shadowOpacity: 0.18, shadowRadius: 44,
     shadowOffset: { width: 0, height: 24 }, elevation: 10,
   },
   brandGlow: {
-    shadowColor: '#6EA8FF', shadowOpacity: 0.4, shadowRadius: 28,
+    shadowColor: '#C69A4B', shadowOpacity: 0.42, shadowRadius: 28,
     shadowOffset: { width: 0, height: 14 }, elevation: 8,
   },
   accentGlow: {
-    shadowColor: '#73D6FF', shadowOpacity: 0.4, shadowRadius: 28,
+    shadowColor: '#D9A24B', shadowOpacity: 0.4, shadowRadius: 28,
     shadowOffset: { width: 0, height: 14 }, elevation: 8,
   },
 } as const;

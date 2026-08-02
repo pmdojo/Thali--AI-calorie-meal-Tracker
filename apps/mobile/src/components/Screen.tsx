@@ -27,17 +27,17 @@ function Blobs() {
       <MotiView
         from={{ translateY: 0, translateX: 0 }} animate={{ translateY: 18, translateX: 10 }}
         transition={{ type: 'timing', duration: 7000, loop: true, repeatReverse: true }}
-        style={[styles.blob, { top: -40, right: -30, backgroundColor: '#8FC7FF' }]}
+        style={[styles.blob, { top: -40, right: -30, backgroundColor: '#E6C98A' }]}
       />
       <MotiView
         from={{ translateY: 0 }} animate={{ translateY: -22 }}
         transition={{ type: 'timing', duration: 8000, loop: true, repeatReverse: true }}
-        style={[styles.blob, { top: 220, left: -60, backgroundColor: '#C9BFFF' }]}
+        style={[styles.blob, { top: 220, left: -60, backgroundColor: '#D8C3A0' }]}
       />
       <MotiView
         from={{ translateX: 0 }} animate={{ translateX: 16 }}
         transition={{ type: 'timing', duration: 9000, loop: true, repeatReverse: true }}
-        style={[styles.blob, { bottom: 40, right: -50, backgroundColor: '#9BE7FF' }]}
+        style={[styles.blob, { bottom: 40, right: -50, backgroundColor: '#CFC1AC' }]}
       />
     </View>
   );

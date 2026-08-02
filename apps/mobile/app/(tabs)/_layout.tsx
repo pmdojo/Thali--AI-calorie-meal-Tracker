@@ -16,7 +16,7 @@ function TabIcon({ icon, focused }: { icon: IconName; focused: boolean }) {
           style={styles.pillBg}
         >
           <LinearGradient
-            colors={['rgba(110,168,255,0.18)', 'rgba(115,214,255,0.16)']}
+            colors={['rgba(198,154,75,0.20)', 'rgba(217,162,75,0.16)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFillObject}

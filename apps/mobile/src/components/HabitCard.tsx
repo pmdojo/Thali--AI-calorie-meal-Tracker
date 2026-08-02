@@ -15,11 +15,11 @@ interface Props {
 }
 
 const TINT: Record<NonNullable<Props['tint']>, { bg: string; fg: string; ring: string }> = {
-  mint:     { bg: colors.surfaceMint, fg: '#1E9E72', ring: '#B7E6D3' },
-  sky:      { bg: colors.surfaceSky,  fg: '#2E8CC0', ring: '#AFE0F7' },
-  peach:    { bg: colors.surfaceWarm, fg: '#2E8CC0', ring: '#C4EEFF' },
-  lavender: { bg: colors.surfaceAlt,  fg: '#5B6BE0', ring: '#C7CFFF' },
-  gold:     { bg: '#E4F1FF',          fg: '#3B7FCB', ring: '#B4D6F7' },
+  mint:     { bg: colors.surfaceMint, fg: '#6E8B4E', ring: '#C7D2A0' },
+  sky:      { bg: colors.surfaceSky,  fg: '#5E7B6A', ring: '#B7CBB2' },
+  peach:    { bg: colors.surfaceWarm, fg: '#B5714B', ring: '#E0B896' },
+  lavender: { bg: colors.surfaceAlt,  fg: '#A97F32', ring: '#E6C98A' },
+  gold:     { bg: '#F3E9D0',          fg: '#8A6E2A', ring: '#D8C48A' },
 };
 
 export function HabitCard({ title, subtitle, icon, tint = 'mint', count, streak, onPress }: Props) {
