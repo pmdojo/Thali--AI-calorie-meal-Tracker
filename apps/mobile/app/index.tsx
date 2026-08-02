@@ -13,17 +13,14 @@ export default function Index() {
   useEffect(() => {
     // If hydration already finished before this effect ran, onFinishHydration
     // would never fire — so check up front and only subscribe otherwise.
+    // persist always resolves hydration (even on a storage error), so no timeout
+    // is needed; a timeout here would risk redirecting to onboarding with a
+    // stale `done=false` while the store is still loading on a cold start.
     if (useStore.persist.hasHydrated()) {
       setHydrated(true);
       return;
     }
-    const unsub = useStore.persist.onFinishHydration(() => setHydrated(true));
-    // Safety net: never hang on the blank placeholder if hydration stalls.
-    const t = setTimeout(() => setHydrated(true), 1500);
-    return () => {
-      unsub();
-      clearTimeout(t);
-    };
+    return useStore.persist.onFinishHydration(() => setHydrated(true));
   }, []);
 
   if (!hydrated) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;

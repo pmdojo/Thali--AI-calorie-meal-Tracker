@@ -1,6 +1,7 @@
 import { WaitlistForm } from './waitlist-form';
 import { HeroOrbit } from './hero-orbit';
 import { Reveal, RevealStagger, RevealItem } from './reveal';
+import { ClayIcon, type ClayKind } from './clay-food';
 import s from './page.module.css';
 
 const APP_URL = 'https://thali-ai.vercel.app';
@@ -33,15 +34,15 @@ export default function Landing() {
           <Reveal><h2 className={s.h2}>Not another calorie app</h2></Reveal>
           <RevealStagger className={s.grid3}>
             <RevealItem className={s.card}>
-              <Feature emoji="🍛" title="Calibrated for Indian food"
+              <Feature clay="thali" title="Calibrated for Indian food"
                 body="A curated dish reference with per-portion gram weights — not a global database that guesses on your dal-chawal-sabzi thali." />
             </RevealItem>
             <RevealItem className={s.card}>
-              <Feature emoji="📈" title="Ranges, not fake precision"
+              <Feature clay="dal" title="Ranges, not fake precision"
                 body="Every estimate ships with a confidence band. Point estimates on photo-guessed home food are a claim the science can't back." />
             </RevealItem>
             <RevealItem className={s.card}>
-              <Feature emoji="🔄" title="One better choice, not a lecture"
+              <Feature clay="sabzi" title="One better choice, not a lecture"
                 body="If a meal is a lot for what's left in your day, you get a single concrete swap — tap it or ignore it. Never five buttons and a chart." />
             </RevealItem>
           </RevealStagger>
@@ -92,10 +93,10 @@ export default function Landing() {
   );
 }
 
-function Feature({ emoji, title, body }: { emoji: string; title: string; body: string }) {
+function Feature({ clay, title, body }: { clay: ClayKind; title: string; body: string }) {
   return (
     <>
-      <div className={s.cardEmoji}>{emoji}</div>
+      <div className={s.cardClay}><ClayIcon kind={clay} size={64} /></div>
       <h3 className={s.cardTitle}>{title}</h3>
       <p className={s.cardBody}>{body}</p>
     </>

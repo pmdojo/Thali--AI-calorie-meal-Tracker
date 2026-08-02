@@ -41,9 +41,11 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarStyle: styles.bar,
         tabBarBackground: () => (
-          <View style={StyleSheet.absoluteFillObject}>
+          // Clip the fill to the bar's radius so the corners actually round off
+          // (the bar itself keeps overflow:visible so its shadow isn't clipped).
+          <View style={[StyleSheet.absoluteFillObject, { borderRadius: radii.xl, overflow: 'hidden' }]}>
             <LinearGradient
-              colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+              colors={['rgba(255,255,255,0.96)', 'rgba(255,251,244,0.92)']}
               style={StyleSheet.absoluteFillObject}
             />
           </View>
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.lg, right: spacing.lg, bottom: spacing.lg,
     height: 68,
-    borderRadius: radii.pill,
+    borderRadius: radii.xl,        // soft-rounded floating bar
     borderTopWidth: 0,
     borderWidth: 1,
     borderColor: colors.glassBorder,
