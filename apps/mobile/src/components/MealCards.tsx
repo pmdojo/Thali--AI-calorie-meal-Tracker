@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getDish } from '@thali/shared';
 import { colors, fonts, radii, spacing } from '@thali/ui-tokens';
+import { Food3D } from './Food3D';
 import { Icon } from './Icon';
 import type { MealLog, MealType } from '../store';
 
@@ -19,16 +20,15 @@ import type { MealLog, MealType } from '../store';
 type Slot = {
   type: MealType;
   label: string;
-  emoji: string;
   grad: readonly [string, string];
   share: number; // fraction of the day's budget this slot typically holds
 };
 
 const SLOTS: readonly Slot[] = [
-  { type: 'breakfast', label: 'Breakfast', emoji: '🍳', grad: ['#F4B183', '#E8895A'], share: 0.25 },
-  { type: 'lunch',     label: 'Lunch',     emoji: '🥗', grad: ['#E7A15C', '#C26E2E'], share: 0.35 },
-  { type: 'dinner',    label: 'Dinner',    emoji: '🍛', grad: ['#D68E5A', '#A15E38'], share: 0.30 },
-  { type: 'snack',     label: 'Snack',     emoji: '🍎', grad: ['#ECAF82', '#D98357'], share: 0.10 },
+  { type: 'breakfast', label: 'Breakfast', grad: ['#F4B183', '#E8895A'], share: 0.25 },
+  { type: 'lunch',     label: 'Lunch',     grad: ['#E7A15C', '#C26E2E'], share: 0.35 },
+  { type: 'dinner',    label: 'Dinner',    grad: ['#D68E5A', '#A15E38'], share: 0.30 },
+  { type: 'snack',     label: 'Snack',     grad: ['#ECAF82', '#D98357'], share: 0.10 },
 ] as const;
 
 function dishName(id: string): string {
@@ -50,7 +50,7 @@ export function MealCards({ meals, budgetKcal, onAdd, onOpen }: MealCardsProps) 
   const gutter = spacing.xl; // matches Screen's horizontal padding
   const cardW = Math.max(150, Math.min(210, (width - gutter * 2) * 0.52));
   const cardH = Math.round(cardW * 1.52);
-  const emojiSize = Math.round(cardW * 0.30);
+  const emojiSize = Math.round(cardW * 0.58); // the 3D illustration
 
   return (
     <ScrollView
@@ -179,9 +179,9 @@ function MealCard({
               animate={{ translateY: -6 }}
               transition={{ type: 'timing', duration: 2200, loop: true, repeatReverse: true, delay: index * 260 }}
               pointerEvents="none"
-              style={[styles.foodWrap, { top: -emojiSize * 0.52, left: width * 0.5 - emojiSize * 0.5 }]}
+              style={[styles.foodWrap, { top: -emojiSize * 0.58, left: width * 0.5 - emojiSize * 0.5 }]}
             >
-              <Text style={{ fontSize: emojiSize }}>{slot.emoji}</Text>
+              <Food3D type={slot.type} size={emojiSize} />
             </MotiView>
           </MotiView>
         )}
