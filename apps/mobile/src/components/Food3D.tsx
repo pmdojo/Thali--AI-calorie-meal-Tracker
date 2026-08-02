@@ -92,21 +92,23 @@ function SaladBowl({ p }: { p: string }) {
         </RadialGradient>
       </Defs>
       <Shadow />
-      {/* greens (drawn first so the rim seats over them) */}
-      <Circle cx="36" cy="46" r="12" fill={`url(#${p}-leaf2)`} />
-      <Circle cx="64" cy="45" r="13" fill={`url(#${p}-leaf1)`} />
-      <Circle cx="50" cy="37" r="14" fill={`url(#${p}-leaf1)`} />
-      <Circle cx="44" cy="43" r="10" fill={`url(#${p}-leaf2)`} />
-      <Circle cx="58" cy="42" r="9" fill={`url(#${p}-leaf2)`} />
+      {/* greens — billow up out of the bowl, base tucked behind the rim so it
+          reads as sitting IN the bowl (drawn first; the rim seats over them) */}
+      <Circle cx="34" cy="50" r="13" fill={`url(#${p}-leaf2)`} />
+      <Circle cx="66" cy="49" r="14" fill={`url(#${p}-leaf1)`} />
+      <Circle cx="50" cy="41" r="16" fill={`url(#${p}-leaf1)`} />
+      <Circle cx="43" cy="51" r="12" fill={`url(#${p}-leaf2)`} />
+      <Circle cx="59" cy="49" r="12" fill={`url(#${p}-leaf1)`} />
+      <Circle cx="50" cy="53" r="12" fill={`url(#${p}-leaf2)`} />
       {/* tomato + cucumber accents */}
-      <Circle cx="63" cy="49" r="6" fill={`url(#${p}-tom)`} />
-      <Ellipse cx="61" cy="46.5" rx="2" ry="1.3" fill="rgba(255,255,255,0.6)" />
-      <Circle cx="39" cy="50" r="5" fill="#CDE8A6" />
-      <Circle cx="39" cy="50" r="2.4" fill="#A9D072" />
-      {/* bowl */}
-      <Path d="M22,54 a28,28 0 0 0 56,0 z" fill={`url(#${p}-bowl)`} />
-      <Ellipse cx="50" cy="54" rx="28" ry="7.5" fill="#FBF4E8" />
-      <Ellipse cx="50" cy="54" rx="23" ry="5.2" fill="rgba(120,90,50,0.16)" />
+      <Circle cx="64" cy="51" r="6" fill={`url(#${p}-tom)`} />
+      <Ellipse cx="62" cy="48.5" rx="2" ry="1.3" fill="rgba(255,255,255,0.6)" />
+      <Circle cx="38" cy="53" r="5" fill="#CDE8A6" />
+      <Circle cx="38" cy="53" r="2.4" fill="#A9D072" />
+      {/* bowl — rim seats over the base of the greens */}
+      <Path d="M22,56 a28,28 0 0 0 56,0 z" fill={`url(#${p}-bowl)`} />
+      <Ellipse cx="50" cy="56" rx="28" ry="7.5" fill="#FBF4E8" />
+      <Ellipse cx="50" cy="56" rx="23" ry="5" fill="rgba(120,90,50,0.16)" />
     </G>
   );
 }
@@ -130,19 +132,20 @@ function RiceBowl({ p }: { p: string }) {
         </RadialGradient>
       </Defs>
       <Shadow />
-      {/* rice mound — clustered soft lobes */}
-      <Circle cx="42" cy="44" r="9" fill={`url(#${p}-rice)`} />
-      <Circle cx="55" cy="42" r="10" fill={`url(#${p}-rice)`} />
-      <Circle cx="50" cy="49" r="10" fill={`url(#${p}-rice)`} />
-      <Circle cx="60" cy="49" r="7" fill={`url(#${p}-rice)`} />
+      {/* rice mound — clustered lobes that fill the bowl opening and tuck in */}
+      <Circle cx="42" cy="49" r="11" fill={`url(#${p}-rice)`} />
+      <Circle cx="56" cy="47" r="12" fill={`url(#${p}-rice)`} />
+      <Circle cx="49" cy="42" r="10" fill={`url(#${p}-rice)`} />
+      <Circle cx="50" cy="53" r="12" fill={`url(#${p}-rice)`} />
+      <Circle cx="61" cy="53" r="8" fill={`url(#${p}-rice)`} />
       {/* curry dab + veg specks */}
-      <Circle cx="62" cy="46" r="6" fill={`url(#${p}-curry)`} />
-      <Circle cx="44" cy="41" r="2.2" fill="#6FA83E" />
-      <Circle cx="58" cy="52" r="2.2" fill="#E0692F" />
-      {/* bowl */}
-      <Path d="M22,54 a28,28 0 0 0 56,0 z" fill={`url(#${p}-bowl)`} />
-      <Ellipse cx="50" cy="54" rx="28" ry="7.5" fill="#F3E8D6" />
-      <Ellipse cx="50" cy="54" rx="23" ry="5.2" fill="rgba(120,90,50,0.14)" />
+      <Circle cx="62" cy="50" r="6" fill={`url(#${p}-curry)`} />
+      <Circle cx="43" cy="46" r="2.2" fill="#6FA83E" />
+      <Circle cx="57" cy="55" r="2.2" fill="#E0692F" />
+      {/* bowl — rim seats over the base of the rice */}
+      <Path d="M22,56 a28,28 0 0 0 56,0 z" fill={`url(#${p}-bowl)`} />
+      <Ellipse cx="50" cy="56" rx="28" ry="7.5" fill="#F3E8D6" />
+      <Ellipse cx="50" cy="56" rx="23" ry="5" fill="rgba(120,90,50,0.14)" />
     </G>
   );
 }
