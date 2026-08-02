@@ -19,7 +19,7 @@ export function ThaliMascot({ size = 56 }: { size?: number }) {
     >
       <LinearGradient colors={gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
       <View style={{ zIndex: 1 }}>
-        <ClayFood id="thali" size={size * 0.72} />
+        <ClayFood id="thali" size={size * 1.02} />
       </View>
     </MotiView>
   );

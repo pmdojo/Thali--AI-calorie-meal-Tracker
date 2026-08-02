@@ -72,8 +72,8 @@ const ART: Record<ClayId, (props: { p: string }) => React.JSX.Element> = {
     <G>
       <Defs>
         <RadialGradient id={`${p}-d`} cx="42%" cy="30%" r="75%">
-          <Stop offset="0%" stopColor="#F8CE5E" />
-          <Stop offset="100%" stopColor="#E0982B" />
+          <Stop offset="0%" stopColor="#FFD84F" />
+          <Stop offset="100%" stopColor="#EE951B" />
         </RadialGradient>
       </Defs>
       <Shadow />
@@ -116,8 +116,8 @@ const ART: Record<ClayId, (props: { p: string }) => React.JSX.Element> = {
     <G>
       <Defs>
         <RadialGradient id={`${p}-b`} cx="40%" cy="32%" r="80%">
-          <Stop offset="0%" stopColor="#F6DDAE" />
-          <Stop offset="100%" stopColor="#DCB16C" />
+          <Stop offset="0%" stopColor="#FADFA2" />
+          <Stop offset="100%" stopColor="#E3AF56" />
         </RadialGradient>
       </Defs>
       <Shadow cy={76} rx={28} />
@@ -268,8 +268,8 @@ const ART: Record<ClayId, (props: { p: string }) => React.JSX.Element> = {
           <Stop offset="100%" stopColor="#E7D8BE" />
         </RadialGradient>
         <RadialGradient id={`${p}-dal`} cx="40%" cy="30%" r="75%">
-          <Stop offset="0%" stopColor="#F8CE5E" />
-          <Stop offset="100%" stopColor="#E0982B" />
+          <Stop offset="0%" stopColor="#FFD84F" />
+          <Stop offset="100%" stopColor="#EE951B" />
         </RadialGradient>
       </Defs>
       <Shadow cy={82} rx={28} />

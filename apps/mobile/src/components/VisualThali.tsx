@@ -15,13 +15,15 @@ export interface ThaliSegment {
   dim?: boolean;
 }
 
+// All-warm katori tints (cream → peach → apricot) so the wheel matches the
+// terracotta app palette — no stray blue / purple / green backgrounds.
 const DEFAULT_SEGMENTS: ThaliSegment[] = [
-  { id: 'rice',   clay: 'rice',   label: 'Rice',   bg: '#FBF1DD', ring: '#EACA85' },
-  { id: 'sabzi',  clay: 'sabzi',  label: 'Sabzi',  bg: '#EAF7EF', ring: '#B7E1C7' },
-  { id: 'roti',   clay: 'roti',   label: 'Roti',   bg: '#FDECDE', ring: '#FBCFB5' },
-  { id: 'dal',    clay: 'dal',    label: 'Dal',    bg: '#F5F1FB', ring: '#C7BAFC' },
-  { id: 'curd',   clay: 'curd',   label: 'Curd',   bg: '#E9F1FB', ring: '#B9D2ED' },
-  { id: 'extras', clay: 'extras', label: 'Extras', bg: '#FBF1DD', ring: '#EACA85' },
+  { id: 'rice',   clay: 'rice',   label: 'Rice',   bg: '#FBEEDA', ring: '#EFC98A' },
+  { id: 'sabzi',  clay: 'sabzi',  label: 'Sabzi',  bg: '#FBE7D2', ring: '#F1C39A' },
+  { id: 'roti',   clay: 'roti',   label: 'Roti',   bg: '#FCEBDA', ring: '#F3C6A0' },
+  { id: 'dal',    clay: 'dal',    label: 'Dal',    bg: '#FCEFD8', ring: '#F0CD90' },
+  { id: 'curd',   clay: 'curd',   label: 'Curd',   bg: '#FAF1E6', ring: '#EACBA6' },
+  { id: 'extras', clay: 'extras', label: 'Extras', bg: '#FBEBD3', ring: '#EFC486' },
 ];
 
 // A stylised segmented thali: a steel plate with katoris (little bowls)
@@ -62,7 +64,7 @@ export function VisualThali({
         transition={{ type: 'spring', damping: 16, stiffness: 200, delay: 120 }}
         style={[styles.center, { width: katori * 1.15, height: katori * 1.15, borderRadius: katori }]}
       >
-        <ClayFood id="thali" size={katori * 0.82} />
+        <ClayFood id="thali" size={katori * 1.12} />
       </MotiView>
 
       {/* Katoris in a ring */}
@@ -81,9 +83,9 @@ export function VisualThali({
               { left: x - katori / 2, top: y - katori / 2, width: katori },
             ]}
           >
-            <View style={[styles.katori, { width: katori, height: katori, borderRadius: katori / 2, backgroundColor: s.bg, borderColor: s.ring }]}>
+            <View style={[styles.katori, { width: katori, height: katori, borderRadius: katori / 2, backgroundColor: s.bg, borderColor: s.ring, overflow: 'hidden' }]}>
               {s.clay
-                ? <ClayFood id={s.clay} size={katori * 0.7} />
+                ? <ClayFood id={s.clay} size={katori * 1.04} />
                 : <Text style={{ fontSize: katori * 0.44 }}>{s.emoji}</Text>}
             </View>
             <Text style={[styles.katoriLabel, { color: colors.textSoft }]}>{s.label}</Text>

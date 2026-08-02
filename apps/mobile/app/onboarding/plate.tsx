@@ -31,13 +31,14 @@ export default function Plate() {
 
   // Dim the visual thali segments the user hasn't picked (once they've picked anything).
   const has = (id: string) => picked.length === 0 || picked.includes(id);
+  // All-warm katori tints so the wheel matches the terracotta app palette.
   const segments = [
-    { id: 'rice',   clay: 'rice' as const,   label: 'Rice',   bg: '#FBF1DD', ring: '#EACA85', dim: !has('rice') },
-    { id: 'sabzi',  clay: 'sabzi' as const,  label: 'Sabzi',  bg: '#EAF7EF', ring: '#B7E1C7', dim: !has('sabzi') },
-    { id: 'roti',   clay: 'roti' as const,   label: 'Roti',   bg: '#FDECDE', ring: '#FBCFB5', dim: !has('roti') },
-    { id: 'dal',    clay: 'dal' as const,    label: 'Dal',    bg: '#F5F1FB', ring: '#C7BAFC', dim: !has('dal') },
-    { id: 'curd',   clay: 'curd' as const,   label: 'Curd',   bg: '#E9F1FB', ring: '#B9D2ED', dim: !has('curd') },
-    { id: 'extras', clay: 'extras' as const, label: 'Extras', bg: '#FBF1DD', ring: '#EACA85', dim: false },
+    { id: 'rice',   clay: 'rice' as const,   label: 'Rice',   bg: '#FBEEDA', ring: '#EFC98A', dim: !has('rice') },
+    { id: 'sabzi',  clay: 'sabzi' as const,  label: 'Sabzi',  bg: '#FBE7D2', ring: '#F1C39A', dim: !has('sabzi') },
+    { id: 'roti',   clay: 'roti' as const,   label: 'Roti',   bg: '#FCEBDA', ring: '#F3C6A0', dim: !has('roti') },
+    { id: 'dal',    clay: 'dal' as const,    label: 'Dal',    bg: '#FCEFD8', ring: '#F0CD90', dim: !has('dal') },
+    { id: 'curd',   clay: 'curd' as const,   label: 'Curd',   bg: '#FAF1E6', ring: '#EACBA6', dim: !has('curd') },
+    { id: 'extras', clay: 'extras' as const, label: 'Extras', bg: '#FBEBD3', ring: '#EFC486', dim: false },
   ];
 
   return (
@@ -62,7 +63,7 @@ export default function Plate() {
         {FOODS.map((f) => (
           <EmojiChip
             key={f.id}
-            icon={<ClayFood id={f.id} size={22} />}
+            icon={<ClayFood id={f.id} size={28} />}
             label={f.label}
             selected={picked.includes(f.id)}
             onPress={() => toggle(f.id)}
