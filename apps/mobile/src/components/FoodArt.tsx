@@ -11,8 +11,8 @@ export function FoodArt({ kind, size = 28 }: { kind: FoodKind; size?: number }) 
     <Svg width={size} height={size} viewBox="0 0 48 48">
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0%" stopColor="#E6C98A" />
-          <Stop offset="100%" stopColor="#A97F32" />
+          <Stop offset="0%" stopColor="#F2C79A" />
+          <Stop offset="100%" stopColor="#C26E2E" />
         </LinearGradient>
       </Defs>
 
@@ -21,8 +21,8 @@ export function FoodArt({ kind, size = 28 }: { kind: FoodKind; size?: number }) 
           {/* porridge bowl + steam */}
           <Path d="M9 25 h30 a15 15 0 0 1 -30 0 z" fill={`url(#${id})`} />
           <Ellipse cx="24" cy="25" rx="15" ry="3.4" fill="#F3E9D5" />
-          <Path d="M19 13 q3.5 -3.5 0 -7" stroke="#C69A4B" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-          <Path d="M28 13 q3.5 -3.5 0 -7" stroke="#C69A4B" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+          <Path d="M19 13 q3.5 -3.5 0 -7" stroke="#DD8A46" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+          <Path d="M28 13 q3.5 -3.5 0 -7" stroke="#DD8A46" strokeWidth="2.2" fill="none" strokeLinecap="round" />
         </>
       )}
 

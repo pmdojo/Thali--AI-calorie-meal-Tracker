@@ -13,14 +13,17 @@ export const fonts = {
   numSemi:   'Manrope_600SemiBold',
   numBold:   'Manrope_700Bold',
   numX:      'Manrope_800ExtraBold',
+  serifSemi: 'PlayfairDisplay_600SemiBold',   // elegant serif headings
+  serifBold: 'PlayfairDisplay_700Bold',
+  serifX:    'PlayfairDisplay_800ExtraBold',
   mono:      'Menlo',
 } as const;
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 export const colors = {
-  // surfaces — warm cream / taupe (matches the landing)
-  bg:          '#F3EDE3',        // cream
-  bgAlt:       '#EAE1D3',
+  // surfaces — warm cream / peach (matches the landing)
+  bg:          '#F5E7D0',        // warm cream
+  bgAlt:       '#EFDCC0',
   surface:     '#FFFFFF',
   surfaceAlt:  '#F5ECDB',        // pale gold card
   surfaceWarm: '#F6E7D6',        // pale clay
@@ -43,38 +46,38 @@ export const colors = {
   textFaint:   '#A79C8A',
   onDark:      '#FBF7F0',
 
-  // brand — gold
-  brand:       '#C69A4B',        // primary gold
-  brandDeep:   '#A97F32',
-  brandSoft:   '#E6C98A',
-  brandTint:   '#F1E6CF',
+  // brand — terracotta orange (matches the landing)
+  brand:       '#DD8A46',        // terracotta orange
+  brandDeep:   '#C26E2E',
+  brandSoft:   '#F2C79A',
+  brandTint:   '#FBE6CE',
 
   secondary:   '#B5714B',        // terracotta clay
   secondaryDeep:'#96592F',
   secondaryTint:'#F3E1D2',
 
-  accent:      '#D9A24B',        // amber
-  accentDeep:  '#B37E29',
-  accentSoft:  '#F2D8A5',
-  accentTint:  '#F7EAD2',
+  accent:      '#E39A57',        // warm amber-orange
+  accentDeep:  '#C26E2E',
+  accentSoft:  '#F2C79A',
+  accentTint:  '#FBE6CE',
 
   ink:         '#2A241D',        // near-black warm for pill CTAs
 
-  gold:        '#C69A4B',
-  goldSoft:    '#E6C98A',
+  gold:        '#DD8A46',
+  goldSoft:    '#F2C79A',
 
   // semantics (warm-harmonised)
   success:     '#6E8B4E',        // olive
   successSoft: '#DCE6C6',
-  warning:     '#D9A24B',
-  warningSoft: '#F2D8A5',
+  warning:     '#E39A57',
+  warningSoft: '#F7DAB8',
   danger:      '#C1553B',        // terracotta red
   dangerSoft:  '#F0CFC4',
-  info:        '#C69A4B',
-  infoSoft:    '#F1E6CF',
+  info:        '#DD8A46',
+  infoSoft:    '#FBE6CE',
 
-  // macro chips — earthy hues
-  protein:     '#C69A4B',        // gold
+  // macro chips — earthy hues (protein leads with the orange brand)
+  protein:     '#DD8A46',        // terracotta orange
   carbs:       '#B5714B',        // clay
   fat:         '#A88A3A',        // bronze
   water:       '#6E8B7A',        // sage
@@ -85,21 +88,21 @@ export type ColorToken = keyof typeof colors;
 
 // Gradients
 export const gradients = {
-  brand:      ['#D9B45C', '#A97F32'] as [string, string],
-  brandCalm:  ['#E6C98A', '#C69A4B'] as [string, string],
-  peach:      ['#E0A35A', '#C97B4B'] as [string, string],  // warm clay
-  sunrise:    ['#F6EFE2', '#F3EDE3'] as [string, string],   // hero bg
-  parchment:  ['#F3EDE3', '#EAE1D3'] as [string, string],   // screen bg
+  brand:      ['#E39A57', '#C26E2E'] as [string, string],   // terracotta orange
+  brandCalm:  ['#F2C79A', '#DD8A46'] as [string, string],
+  peach:      ['#E39A57', '#C26E2E'] as [string, string],   // warm orange
+  sunrise:    ['#F8ECD6', '#F3DCBE'] as [string, string],   // hero bg (cream→peach)
+  parchment:  ['#F8ECD6', '#EBC99C'] as [string, string],   // screen bg (cream→peach)
   mint:       ['#9BB06E', '#6E8B4E'] as [string, string],
-  sky:        ['#D8C3A0', '#C0A97F'] as [string, string],
-  gold:       ['#E6C98A', '#C69A4B'] as [string, string],
+  sky:        ['#F2C79A', '#E0A35A'] as [string, string],
+  gold:       ['#F2C79A', '#DD8A46'] as [string, string],
   ink:        ['#3A2E1D', '#2A241D'] as [string, string],   // dark pill CTA
   glassSheen: ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.5)'] as [string, string],
   // warm sticker tags (legacy names kept)
-  tagYellow:  ['#F2D89A', '#E6C066'] as [string, string],
+  tagYellow:  ['#F7D8A8', '#EDB877'] as [string, string],
   tagPink:    ['#F0C7A8', '#E0A37B'] as [string, string],
-  tagPurple:  ['#D8C6A0', '#C0A97F'] as [string, string],
-  tagBlue:    ['#E6C98A', '#C69A4B'] as [string, string],
+  tagPurple:  ['#EAC79C', '#D8A86F'] as [string, string],
+  tagBlue:    ['#F2C79A', '#DD8A46'] as [string, string],
 } as const;
 
 // ─── Spacing ────────────────────────────────────────────────────────────────
@@ -114,11 +117,11 @@ export const radii = {
 
 // ─── Typography ─────────────────────────────────────────────────────────────
 export const type = {
-  displayXL: { fontFamily: fonts.extrabold, fontSize: 44, lineHeight: 50, letterSpacing: -1.2, fontWeight: '800' as const },
-  display:   { fontFamily: fonts.extrabold, fontSize: 34, lineHeight: 40, letterSpacing: -0.8, fontWeight: '800' as const },
-  h1:        { fontFamily: fonts.bold, fontSize: 28, lineHeight: 34, letterSpacing: -0.5, fontWeight: '700' as const },
-  h2:        { fontFamily: fonts.bold, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, fontWeight: '700' as const },
-  h3:        { fontFamily: fonts.semibold, fontSize: 18, lineHeight: 24, letterSpacing: -0.2, fontWeight: '600' as const },
+  displayXL: { fontFamily: fonts.serifX, fontSize: 46, lineHeight: 52, letterSpacing: -1, fontWeight: '800' as const },
+  display:   { fontFamily: fonts.serifX, fontSize: 36, lineHeight: 42, letterSpacing: -0.6, fontWeight: '800' as const },
+  h1:        { fontFamily: fonts.serifBold, fontSize: 29, lineHeight: 36, letterSpacing: -0.4, fontWeight: '700' as const },
+  h2:        { fontFamily: fonts.serifBold, fontSize: 23, lineHeight: 30, letterSpacing: -0.2, fontWeight: '700' as const },
+  h3:        { fontFamily: fonts.serifSemi, fontSize: 19, lineHeight: 25, letterSpacing: -0.1, fontWeight: '600' as const },
   bodyLg:    { fontFamily: fonts.regular, fontSize: 17, lineHeight: 26, fontWeight: '400' as const },
   body:      { fontFamily: fonts.regular, fontSize: 15, lineHeight: 23, fontWeight: '400' as const },
   bodyBold:  { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 22, fontWeight: '600' as const },
@@ -147,11 +150,11 @@ export const shadow = {
     shadowOffset: { width: 0, height: 24 }, elevation: 10,
   },
   brandGlow: {
-    shadowColor: '#C69A4B', shadowOpacity: 0.42, shadowRadius: 28,
+    shadowColor: '#DD8A46', shadowOpacity: 0.42, shadowRadius: 28,
     shadowOffset: { width: 0, height: 14 }, elevation: 8,
   },
   accentGlow: {
-    shadowColor: '#D9A24B', shadowOpacity: 0.4, shadowRadius: 28,
+    shadowColor: '#E39A57', shadowOpacity: 0.4, shadowRadius: 28,
     shadowOffset: { width: 0, height: 14 }, elevation: 8,
   },
 } as const;

@@ -56,12 +56,12 @@ export function Sparkline({ data, goal, labels, height = 130, width = 300 }: Pro
         <Svg width={width} height={height}>
           <Defs>
             <SvgLG id="areaFill" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#C69A4B" stopOpacity="0.35" />
-              <Stop offset="100%" stopColor="#C69A4B" stopOpacity="0" />
+              <Stop offset="0%" stopColor="#DD8A46" stopOpacity="0.35" />
+              <Stop offset="100%" stopColor="#DD8A46" stopOpacity="0" />
             </SvgLG>
             <SvgLG id="lineStroke" x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0%" stopColor="#C69A4B" />
-              <Stop offset="100%" stopColor="#A97F32" />
+              <Stop offset="0%" stopColor="#DD8A46" />
+              <Stop offset="100%" stopColor="#C26E2E" />
             </SvgLG>
           </Defs>
 
@@ -87,7 +87,7 @@ export function Sparkline({ data, goal, labels, height = 130, width = 300 }: Pro
               cx={p.x} cy={p.y}
               r={i === points.length - 1 ? 5 : 3.5}
               fill="#fff"
-              stroke={i === points.length - 1 ? '#A97F32' : '#C69A4B'}
+              stroke={i === points.length - 1 ? '#C26E2E' : '#DD8A46'}
               strokeWidth={2}
             />
           ))}

@@ -40,7 +40,7 @@ export function AICoachCard({ headline, body, tag = 'AI Nutritionist', ctaLabel,
   return (
     <View style={[styles.wrap, shadow.brandGlow]}>
       <LinearGradient
-        colors={['#3A2E1D', '#7A5E32', '#C69A4B']}
+        colors={['#3A2E1D', '#9A5E38', '#DD8A46']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -91,9 +91,9 @@ const styles = StyleSheet.create({
   bloom: {
     position: 'absolute', top: -60, right: -40,
     width: 180, height: 180, borderRadius: 90,
-    backgroundColor: 'rgba(230,201,138,0.6)',
+    backgroundColor: 'rgba(242,199,154,0.6)',
     // soft blur via shadow
-    shadowColor: '#E6C98A', shadowOpacity: 0.9, shadowRadius: 60, shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#F2C79A', shadowOpacity: 0.9, shadowRadius: 60, shadowOffset: { width: 0, height: 0 },
     opacity: 0.5,
   },
   orbWrap: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center' },

@@ -17,7 +17,7 @@ interface Props {
 }
 
 const TINT: Record<NonNullable<Props['tint']>, { grad: [string, string]; ring: string; fg: string; }> = {
-  lavender: { grad: ['#F5ECDB', '#EFE0C4'], ring: '#E6C98A', fg: '#A97F32' },  // protein (gold)
+  lavender: { grad: ['#F5ECDB', '#EFE0C4'], ring: '#F2C79A', fg: '#C26E2E' },  // protein (gold)
   peach:    { grad: ['#F6E7D6', '#F0D8C0'], ring: '#E0B896', fg: '#B5714B' },  // fat (clay)
   mint:     { grad: ['#ECEEDC', '#DEE3C4'], ring: '#C7D2A0', fg: '#6E8B4E' },  // olive
   sky:      { grad: ['#E9EEE7', '#D8E2D4'], ring: '#B7CBB2', fg: '#5E7B6A' },  // water (sage)

@@ -18,7 +18,7 @@ const TINT: Record<NonNullable<Props['tint']>, { bg: string; fg: string; ring: s
   mint:     { bg: colors.surfaceMint, fg: '#6E8B4E', ring: '#C7D2A0' },
   sky:      { bg: colors.surfaceSky,  fg: '#5E7B6A', ring: '#B7CBB2' },
   peach:    { bg: colors.surfaceWarm, fg: '#B5714B', ring: '#E0B896' },
-  lavender: { bg: colors.surfaceAlt,  fg: '#A97F32', ring: '#E6C98A' },
+  lavender: { bg: colors.surfaceAlt,  fg: '#C26E2E', ring: '#F2C79A' },
   gold:     { bg: '#F3E9D0',          fg: '#8A6E2A', ring: '#D8C48A' },
 };
 

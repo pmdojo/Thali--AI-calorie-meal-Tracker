@@ -10,6 +10,11 @@ import {
   Manrope_700Bold,
   Manrope_800ExtraBold,
 } from '@expo-google-fonts/manrope';
+import {
+  PlayfairDisplay_600SemiBold,
+  PlayfairDisplay_700Bold,
+  PlayfairDisplay_800ExtraBold,
+} from '@expo-google-fonts/playfair-display';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -28,6 +33,9 @@ export default function RootLayout() {
     Manrope_600SemiBold,
     Manrope_700Bold,
     Manrope_800ExtraBold,
+    PlayfairDisplay_600SemiBold,
+    PlayfairDisplay_700Bold,
+    PlayfairDisplay_800ExtraBold,
   });
 
   // Render nothing (on the sky bg) until fonts are ready — avoids a flash of
