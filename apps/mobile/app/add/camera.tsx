@@ -251,9 +251,10 @@ export default function CameraScreen() {
         </View>
       )}
 
-      {/* Detection bubbles */}
-      {stage === 'results' && detections.map((d, i) => {
-        const pos = BUBBLE_POS[i % BUBBLE_POS.length];
+      {/* Detection bubbles — cap to the fixed positions so they never overlap;
+          the full list + total lives in the summary bar and review screen */}
+      {stage === 'results' && detections.slice(0, BUBBLE_POS.length).map((d, i) => {
+        const pos = BUBBLE_POS[i];
         return (
           <MotiView
             key={i}
