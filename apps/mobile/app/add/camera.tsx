@@ -57,23 +57,47 @@ export default function CameraScreen() {
   const [components, setComponents] = useState<MealComponent[]>([]);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [isMock, setIsMock] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [camError, setCamError] = useState(false);
+
+  const WEB = Platform.OS === 'web';
+  const cameraReady = permission?.granted && !camError;
+
+  function resetToFraming() {
+    setCaptured(null);
+    setDetections([]);
+    setComponents([]);
+    setStage('framing');
+  }
 
   if (!permission) {
     return <View style={styles.dark}><ActivityIndicator color="#fff" /></View>;
   }
 
-  if (!permission.granted) {
+  // Show the permission / upload screen only while framing with nothing yet
+  // captured. The analyzing / results / error views below MUST still render
+  // without camera access (denied prompt, or a desktop browser) so a photo
+  // picked from the library still flows through to recognition.
+  if (!cameraReady && stage === 'framing' && !captured) {
     return (
       <View style={styles.permWrap}>
         <View style={styles.permIcon}><Icon name="camera" size={30} color="#fff" /></View>
-        <Text style={styles.permTitle}>Scan your food</Text>
-        <Text style={styles.permBody}>Thali reads the plate on-device. Photos never leave your phone unless you log the meal.</Text>
-        <Pressable style={styles.permPrimary} onPress={requestPermission}>
-          <Text style={styles.permPrimaryText}>Enable camera</Text>
+        <Text style={styles.permTitle}>Scan your meal</Text>
+        <Text style={styles.permBody}>
+          {camError
+            ? 'Camera unavailable here. Upload a photo of your plate and Thali will read the dishes.'
+            : 'Upload a photo of your plate — or enable the camera — and Thali reads the dishes and estimates portions.'}
+        </Text>
+        <Pressable style={styles.permPrimary} onPress={pickFromLibrary}>
+          <Icon name="imageIcon" size={18} color="#fff" strokeWidth={2.2} />
+          <Text style={styles.permPrimaryText}>Upload a photo</Text>
         </Pressable>
-        <Pressable style={styles.permGhost} onPress={pickFromLibrary}>
-          <Text style={styles.permGhostText}>Pick from library instead</Text>
-        </Pressable>
+        {!camError && (
+          <Pressable style={styles.permGhost} onPress={requestPermission}>
+            <Text style={styles.permGhostText}>Or enable the camera</Text>
+          </Pressable>
+        )}
+        {notice && <Text style={styles.permNotice}>{notice}</Text>}
         <Pressable onPress={() => router.back()} style={{ marginTop: spacing.md }}>
           <Text style={styles.permGhostText}>Cancel</Text>
         </Pressable>
@@ -99,10 +123,12 @@ export default function CameraScreen() {
       ];
 
       if (comps.length === 0 && unresolved.length === 0) {
+        setCaptured(null);
         setStage('framing');
-        Alert.alert("Couldn't read the plate", 'Try a clearer, top-down photo.');
+        setNotice("Couldn't read the plate — try a clearer, top-down photo.");
         return;
       }
+      setNotice(null);
       setComponents(comps);
       setDetections(dets);
       setStage('results');
@@ -158,17 +184,25 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.dark}>
-      {/* Camera or frozen capture */}
-      {stage === 'results' && captured ? (
+      {/* Captured photo > live camera > dark fallback */}
+      {captured ? (
         <Image source={{ uri: captured }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+      ) : cameraReady ? (
+        <CameraView
+          ref={cam}
+          style={StyleSheet.absoluteFillObject}
+          facing="back"
+          enableTorch={torch}
+          onMountError={() => setCamError(true)}
+        />
       ) : (
-        <CameraView ref={cam} style={StyleSheet.absoluteFillObject} facing="back" enableTorch={torch} />
+        <View style={StyleSheet.absoluteFillObject} />
       )}
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(10,8,20,0.28)' }]} pointerEvents="none" />
 
       {/* Top bar */}
       <View style={styles.topBar}>
-        <Pressable onPress={() => (stage === 'results' ? setStage('framing') : router.back())} style={styles.roundBtn}>
+        <Pressable onPress={() => (stage === 'results' ? resetToFraming() : router.back())} style={styles.roundBtn}>
           <Icon name={stage === 'results' ? 'arrowLeft' : 'x'} size={20} color="#fff" />
         </Pressable>
         <Text style={styles.topTitle}>{stage === 'results' ? 'Detected' : 'Scan food'}</Text>
@@ -176,6 +210,14 @@ export default function CameraScreen() {
           <Icon name="sparkles" size={18} color="#fff" strokeWidth={2.2} />
         </View>
       </View>
+
+      {/* Notice (e.g. couldn't read the plate) — visible on web, unlike Alert */}
+      {stage === 'framing' && notice && (
+        <View style={styles.noticeBanner} pointerEvents="none">
+          <Icon name="info" size={15} color="#fff" strokeWidth={2.2} />
+          <Text style={styles.noticeText}>{notice}</Text>
+        </View>
+      )}
 
       {/* Reticle (framing) */}
       {stage === 'framing' && (
@@ -260,7 +302,7 @@ export default function CameraScreen() {
             <Text style={styles.resultTitle}>{detections.length} item{detections.length > 1 ? 's' : ''} · ~{totalKcal} kcal</Text>
             <Text style={styles.resultSub}>{isMock ? 'Demo recognition' : 'AI recognition'} · tap Log to adjust</Text>
           </View>
-          <Pressable onPress={() => setStage('framing')} style={styles.retake}>
+          <Pressable onPress={resetToFraming} style={styles.retake}>
             <Icon name="camera" size={20} color="#fff" />
           </Pressable>
           <Pressable onPress={confirmLog} style={styles.logBtn}>
@@ -276,7 +318,10 @@ export default function CameraScreen() {
           <View style={styles.errCard}>
             <Text style={[t.h3, { color: colors.text }]}>Couldn't analyze</Text>
             <Text style={[t.body, { color: colors.textMuted }]}>{error ?? 'Unknown error.'}</Text>
-            <Pressable onPress={() => setStage('framing')} style={styles.errBtn}><Text style={styles.errBtnText}>Try again</Text></Pressable>
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
+              <Pressable onPress={resetToFraming} style={styles.errBtn}><Text style={styles.errBtnText}>Try again</Text></Pressable>
+              <Pressable onPress={pickFromLibrary} style={styles.errBtnGhost}><Text style={[styles.errBtnText, { color: colors.brand }]}>Upload a photo</Text></Pressable>
+            </View>
           </View>
         </View>
       )}
@@ -302,10 +347,17 @@ const styles = StyleSheet.create({
   permIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
   permTitle: { fontSize: 24, fontWeight: '800', color: '#fff' },
   permBody: { ...t.body, color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: 300 },
-  permPrimary: { backgroundColor: colors.brand, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 999, marginTop: spacing.md, ...shadow.brandGlow },
+  permPrimary: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.brand, paddingVertical: 15, paddingHorizontal: 32, borderRadius: 999, marginTop: spacing.md, ...shadow.brandGlow },
   permPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   permGhost: { paddingVertical: 10 },
   permGhostText: { color: 'rgba(255,255,255,0.75)', fontWeight: '600' },
+  permNotice: { color: '#F2C79A', fontWeight: '600', fontSize: 13, textAlign: 'center', maxWidth: 300, marginTop: spacing.xs },
+  noticeBanner: {
+    position: 'absolute', top: 108, left: spacing.lg, right: spacing.lg, zIndex: 20,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: 'rgba(20,16,32,0.82)', borderRadius: radii.lg, paddingVertical: 12, paddingHorizontal: 16,
+  },
+  noticeText: { color: '#fff', fontWeight: '600', fontSize: 13, flex: 1 },
 
   topBar: { position: 'absolute', top: 56, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 },
   roundBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
@@ -354,6 +406,7 @@ const styles = StyleSheet.create({
   logText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 
   errCard: { backgroundColor: '#fff', borderRadius: radii.xl, padding: spacing.xl, gap: spacing.sm, margin: spacing.xl, alignItems: 'flex-start' },
-  errBtn: { backgroundColor: colors.brand, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 999, marginTop: spacing.sm },
+  errBtn: { backgroundColor: colors.brand, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 999 },
+  errBtnGhost: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 999, borderWidth: 1, borderColor: colors.border },
   errBtnText: { color: '#fff', fontWeight: '700' },
 });
