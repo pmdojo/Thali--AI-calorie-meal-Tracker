@@ -49,12 +49,10 @@ export default async function handler(req: any, res: any) {
       },
       body: JSON.stringify({ device_id: deviceId, event, props }),
     });
-    if (r.ok) return res.status(200).json({ ok: true, stored: true });
-    // TEMP diagnostic (no secrets) — remove after setup is verified.
-    const detail = (await r.text()).slice(0, 300);
-    return res.status(200).json({ ok: false, stored: false, upstream: r.status, detail });
-  } catch (e: any) {
-    return res.status(200).json({ ok: true, stored: false, err: String(e?.message ?? e).slice(0, 200) });
+    return res.status(200).json({ ok: r.ok, stored: r.ok });
+  } catch {
+    // Fire-and-forget — never surface telemetry failures to the app.
+    return res.status(200).json({ ok: true, stored: false });
   }
 }
 
