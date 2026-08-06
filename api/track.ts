@@ -37,7 +37,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const base = SUPABASE_URL.replace(/\/+$/, '');
+    // Accept either the bare project URL or the full REST URL (…/rest/v1).
+    const base = SUPABASE_URL.replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
     const r = await fetch(`${base}/rest/v1/usage_events`, {
       method: 'POST',
       headers: {

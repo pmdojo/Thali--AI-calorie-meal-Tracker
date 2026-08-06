@@ -21,7 +21,8 @@ export default async function handler(req: any, res: any) {
   if (key !== STATS_TOKEN) return res.status(401).json({ error: 'unauthorized' });
 
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/usage_summary?select=*`, {
+    const base = SUPABASE_URL.replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
+    const r = await fetch(`${base}/rest/v1/usage_summary?select=*`, {
       headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
     });
     if (!r.ok) return res.status(502).json({ error: 'query_failed', status: r.status });
