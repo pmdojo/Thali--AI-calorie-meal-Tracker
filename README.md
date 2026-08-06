@@ -95,6 +95,7 @@ The flag fires when a meal is projected to eat more than **40% of the remaining 
 - **Soft-clay 3D illustration set** — hand-built SVG food art (thali, dal, sabzi, roti, curd, paneer, egg, fish, chicken, an egg-on-toast and more) rendered from a single `ClayFood`/`Food3D` system across the app *and* ported to the web landing — no emoji, no third-party asset packs.
 - **Animated food-orbit landing** — a real thali plate at the centre with katoris orbiting a dashed ring, auto-crossfading dish copy, plus 3D-clay feature icons.
 - **Landing page** with waitlist form + Supabase-backed capture endpoint.
+- **Anonymous usage analytics** — an opt-out-free-of-PII counter (session / onboarding / meal-logged / scan) written server-side to Supabase, with a token-gated `/api/stats` JSON endpoint and a `/api/dashboard` page. No login.
 
 ### Not in v1 — deliberately
 No global food database. No barcode scanner. No chat coach. No micronutrients. No streak shaming. Narrow scope is what lets the accuracy claim stand up.
@@ -167,6 +168,29 @@ No global food database. No barcode scanner. No chat coach. No micronutrients. N
 1. Recognition accuracy is a **data** problem (grow the reference table), not a prompt problem.
 2. Cost per meal is bounded: ~2 K tokens in, ~150 out. On Sonnet 5 that's about **$0.01 per photo**.
 3. The app runs identically with a mock recogniser — no vendor lock-in, no dead demo when the API rate-limits.
+
+---
+
+## Analytics — anonymous usage counting
+
+How many people open the app, finish onboarding, scan, and log — without a login and without any personal data. A random device id is generated on-device; the co-hosted **`/api/track`** function inserts events into Supabase with a **server-side service-role key** (never shipped to the client), so the `usage_events` table stays private behind RLS.
+
+```
+app  ──track('session' | 'onboarding_complete' | 'meal_logged' | 'scan_used')──►  /api/track
+                                                                                      │ service-role insert
+                                                                                      ▼
+                                                        Supabase · public.usage_events (RLS on)
+                                                                                      │
+      /api/dashboard  ◄──  /api/stats?key=TOKEN  ◄──  public.usage_summary (rollup view)
+```
+
+**Setup** (all optional — every piece no-ops safely until the keys exist):
+
+1. Create a Supabase project and run [`supabase/migrations/0002_usage_events.sql`](supabase/migrations/0002_usage_events.sql).
+2. Add three env vars to the Vercel project (Production): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server-only), `STATS_TOKEN` (any secret string). Redeploy.
+3. View the numbers: open **`/api/dashboard`** and paste your `STATS_TOKEN`, or `curl "…/api/stats?key=<STATS_TOKEN>"` → `{ total_users, sessions, onboarded_users, meals_logged, scans, active_7d, active_24h }`.
+
+The `service_role` key must live only in server env vars — never in client/app code.
 
 ---
 
