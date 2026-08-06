@@ -9,6 +9,7 @@ import {
   type MealEstimate,
   type UserProfile,
 } from '@thali/shared';
+import { track } from './telemetry';
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -44,7 +45,11 @@ export const useStore = create<State>()(
       onboardingDone: false,
       logs: [],
 
-      setProfile: (p) => set({ profile: p, budget: computeDailyBudget(p), onboardingDone: true }),
+      setProfile: (p) => {
+        const first = !get().onboardingDone;
+        set({ profile: p, budget: computeDailyBudget(p), onboardingDone: true });
+        if (first) track('onboarding_complete', { goal: p.goal });
+      },
 
       addMeal: (input) => {
         const estimate = estimateMeal(input.components);
@@ -58,6 +63,12 @@ export const useStore = create<State>()(
           source: input.source,
         };
         set({ logs: [meal, ...get().logs] });
+        track('meal_logged', {
+          mealType: meal.mealType,
+          source: meal.source,
+          components: meal.components.length,
+          kcalMid: meal.estimate.kcal.mid,
+        });
         return meal;
       },
 

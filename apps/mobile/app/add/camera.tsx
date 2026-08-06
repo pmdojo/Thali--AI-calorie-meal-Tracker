@@ -9,6 +9,7 @@ import { estimateMeal, getDish, type MealComponent } from '@thali/shared';
 import { colors, radii, shadow, spacing, type as t } from '@thali/ui-tokens';
 import { Icon, IconName } from '../../src/components/Icon';
 import { analyzeMealImage, resolveComponents } from '../../src/supabase';
+import { track } from '../../src/telemetry';
 import type { MealType } from '../../src/store';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -113,6 +114,7 @@ export default function CameraScreen() {
       const recognition = await analyzeMealImage(base64, mimeType);
       const { components: comps, unresolved } = resolveComponents(recognition);
       setIsMock(recognition.mock);
+      track('scan_used', { mock: recognition.mock, detected: comps.length + unresolved.length });
 
       const dets: Detection[] = [
         ...comps.map((c) => ({

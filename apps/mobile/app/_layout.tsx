@@ -18,12 +18,17 @@ import {
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@thali/ui-tokens';
+import { trackSession } from '../src/telemetry';
 
 export default function RootLayout() {
+  // Anonymous usage ping — once per launch, fire-and-forget.
+  useEffect(() => { trackSession(); }, []);
+
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
