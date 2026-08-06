@@ -28,6 +28,16 @@
 
 ---
 
+## The landing
+
+<p align="center">
+  <a href="https://meet-thali.vercel.app"><img src="docs/landing.png" alt="Thali landing page — animated food-orbit hero" width="100%"></a>
+</p>
+
+<p align="center"><sub><a href="https://meet-thali.vercel.app"><b>meet-thali.vercel.app</b></a> — an animated food-orbit hero: a real brass thali at the centre with katoris orbiting a dashed ring, auto-crossfading dish copy (kcal + name), and 3D-clay feature icons below.</sub></p>
+
+---
+
 ## The wedge — why not just use Cal AI?
 
 Photo-based calorie logging is commoditized. Cal AI alone crossed 8.3M downloads on a single feature: **point, shoot, get a number**. But the number is frequently wrong on exactly the meals hardest to log manually — mixed, home-cooked Indian dishes — and even when it's right, **nothing happens next**. The user still has to decide, unaided, whether to eat the roti or skip it.
