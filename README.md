@@ -18,8 +18,9 @@
 <p align="center">
   <img alt="Tests" src="https://img.shields.io/badge/tests-17%2F17_passing-4CAF7B">
   <img alt="Stack" src="https://img.shields.io/badge/stack-Expo%20%C2%B7%20React%20Native%20%C2%B7%20Next.js-000000">
-  <img alt="Vision" src="https://img.shields.io/badge/vision-Claude%20Sonnet%205-D97757">
-  <img alt="DB" src="https://img.shields.io/badge/DB-Supabase%20%C2%B7%20RLS-3ECF8E">
+  <img alt="Vision" src="https://img.shields.io/badge/vision-Gemini%20Flash-D97757?logo=googlegemini&logoColor=white">
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%C2%B7%20RLS-3ECF8E?logo=supabase&logoColor=white">
+  <img alt="Deploy" src="https://img.shields.io/badge/Vercel-deployed-000000?logo=vercel&logoColor=white">
 </p>
 
 <p align="center">
@@ -110,9 +111,9 @@ No global food database. No barcode scanner. No chat coach. No micronutrients. N
 | Motion        | **Moti** (Framer Motion for React Native, on Reanimated 3) | Spring physics, mount animations, gesture-driven press states — same API as web Framer Motion |
 | Icons         | **Lucide** (`lucide-react-native`)                     | Consistent 1.8-2.4 stroke system icons; tree-shakable                |
 | State         | **Zustand + AsyncStorage persist**                     | 1 KB of code, no context boilerplate, easy to seed for testing      |
-| Recognition   | **Claude Sonnet 5** vision via Anthropic Messages API   | Tool-use forces structured output; nutrition math never trusts free text |
+| Recognition   | **Gemini Flash** vision (co-hosted `/api/analyze-meal`), **Claude** as fallback | The model only returns `{ dish, portion, confidence }` — every kcal/macro is computed client-side against the dish table, so recognition is a data problem, not a prompt problem |
 | Validation    | **Zod**                                                | Every LLM response is parsed at the boundary                        |
-| Backend       | **Supabase** (Postgres + Auth + RLS + Edge Functions)  | RLS enforces self-only data on day one; Edge Function keeps the API key server-side |
+| Data & backend | **Supabase** (Postgres · Row-Level Security · REST · Edge Functions) | Live today: **anonymous usage analytics** (`usage_events` + `usage_summary`) and the **waitlist** capture. RLS keeps every table private; the `service_role` key stays server-side in the Vercel `/api/*` functions and never ships to the client. Also backs the auth-scoped meal-log schema (`profiles` / `meal_logs`) and the recognition Edge Function on native. |
 | Landing       | **Next.js 14** (App Router)                            | Fast static hero + waitlist API route                               |
 | Type          | **Playfair Display** (serif headings) + **Plus Jakarta Sans** (UI) + **Manrope** (numerics) | Editorial serif display over a clean sans body; loaded via `@expo-google-fonts` on mobile and `next/font` on web |
 | Design tokens | Shared `packages/ui-tokens`                            | Warm terracotta + cream/peach palette (`#DD8A46`), soft-rounded radii, layered near+far shadows, motion springs — one source of truth for mobile and web |
